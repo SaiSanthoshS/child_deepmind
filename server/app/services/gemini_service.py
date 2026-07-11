@@ -180,16 +180,9 @@ async def generate_poster_text(descriptor: ChildDescriptor, language: str) -> st
         f"Child details: {descriptor.model_dump_json()}"
     )
 
-    for attempt in range(3):
-        if attempt > 0:
-            await asyncio.sleep(2 ** attempt)
-        response = await asyncio.to_thread(
-            client.models.generate_content,
-            model=MODEL,
-            contents=prompt,
-        )
-        text = response.text or ""
-        if text:
-            return text
+    interaction = client.interactions.create(
+        model="gemini-3.5-flash",
+        input=prompt,
+    )
 
-    return f"[MISSING CHILD — {language} poster generation failed. Please retry.]"
+    return interaction.output_text
