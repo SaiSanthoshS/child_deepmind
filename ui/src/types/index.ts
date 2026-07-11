@@ -1,6 +1,7 @@
 export interface ChildDescriptor {
   name?: string
   age?: number
+  gender?: string
   height_cm?: number
   weight_kg?: number
   distinguishing_marks?: string

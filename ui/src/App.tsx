@@ -1,16 +1,14 @@
 import { BrowserRouter, Routes, Route, Navigate, NavLink } from 'react-router-dom'
 import ReportPage from './pages/ReportPage'
-import ReviewPage from './pages/ReviewPage'
 import GeneratePage from './pages/GeneratePage'
 import PosterPage from './pages/PosterPage'
 import DispatchPage from './pages/DispatchPage'
 
 const STEPS = [
   { path: '/report', label: '1. Report' },
-  { path: '/review', label: '2. Review' },
-  { path: '/generate', label: '3. Generate' },
-  { path: '/posters', label: '4. Posters' },
-  { path: '/dispatch', label: '5. Dispatch' },
+  { path: '/generate', label: '2. Generate' },
+  { path: '/posters', label: '3. Posters' },
+  { path: '/dispatch', label: '4. Dispatch' },
 ]
 
 export default function App() {
@@ -40,7 +38,6 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Navigate to="/report" replace />} />
             <Route path="/report" element={<ReportPage />} />
-            <Route path="/review" element={<ReviewPage />} />
             <Route path="/generate" element={<GeneratePage />} />
             <Route path="/posters" element={<PosterPage />} />
             <Route path="/dispatch" element={<DispatchPage />} />

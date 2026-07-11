@@ -45,35 +45,37 @@ async def create_age_progression(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+    import asyncio
+
+    async def _generate_one(t_age: int):
+        for attempt in range(3):
+            try:
+                progressed_bytes = await gemini_service.age_progress(
+                    image_bytes=image_bytes,
+                    current_age=current_age,
+                    target_age=t_age,
+                    gender=gender,
+                    description=description
+                )
+                filename = image_utils.save_output(progressed_bytes, prefix=f"age_{t_age}")
+                return t_age, progressed_bytes, filename
+            except Exception as e:
+                if "429" in str(e) and attempt < 2:
+                    await asyncio.sleep(5 * (attempt + 1))  # back off 5s, then 10s
+                    continue
+                raise HTTPException(status_code=500, detail=f"Failed to generate age {t_age}: {str(e)}")
+
+    age_outputs = await asyncio.gather(*[_generate_one(t) for t in target_ages_list])
+
     results = []
     generated_images = []
-    
-    # Process each target age sequentially
-    for t_age in target_ages_list:
-        try:
-            progressed_bytes = await gemini_service.age_progress(
-                image_bytes=image_bytes,
-                current_age=current_age,
-                target_age=t_age,
-                gender=gender,
-                description=description
-            )
-            
-            # Save output
-            filename = image_utils.save_output(progressed_bytes, prefix=f"age_{t_age}")
-            
-            # Generate URL (assuming mounted at /outputs/)
-            image_url = f"/outputs/{filename}"
-            
-            results.append(AgeProgressionResult(
-                target_age=t_age,
-                image_url=image_url,
-                filename=filename
-            ))
-            generated_images.append(progressed_bytes)
-        except Exception as e:
-            # We can either fail the whole request or just skip this age. Let's fail for now.
-            raise HTTPException(status_code=500, detail=f"Failed to generate age {t_age}: {str(e)}")
+    for t_age, img_bytes, filename in sorted(age_outputs, key=lambda x: x[0]):
+        results.append(AgeProgressionResult(
+            target_age=t_age,
+            image_url=f"/outputs/{filename}",
+            filename=filename
+        ))
+        generated_images.append(img_bytes)
 
     grid_url = None
     if generated_images:
