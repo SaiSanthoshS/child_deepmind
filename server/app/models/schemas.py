@@ -107,3 +107,42 @@ class DispatchStatusResponse(BaseModel):
     overall_status: str
     channel_statuses: list[ChannelStatus]
     dispatched_at: Optional[str] = None
+
+
+# ═══════════════════════════════════════════════════════════════
+# Age Progression Feature — Schemas
+# ═══════════════════════════════════════════════════════════════
+
+class AgeProgressionResult(BaseModel):
+    """Single age-progressed image result."""
+    target_age: int
+    image_url: str
+    filename: str
+
+
+class AgeProgressionResponse(BaseModel):
+    """Response for the /age/progress endpoint."""
+    request_id: str
+    child_name: Optional[str] = None
+    current_age: int
+    results: list[AgeProgressionResult]
+    grid_url: Optional[str] = None  # Combined comparison image
+
+
+class ImageEditResponse(BaseModel):
+    """Response for the /age/edit endpoint."""
+    request_id: str
+    edited_image_url: str
+    instruction_applied: str
+
+
+class ImageEnhanceResponse(BaseModel):
+    """Response for the /age/enhance endpoint."""
+    request_id: str
+    enhanced_image_url: str
+    original_filename: str
+
+class DescriptorResponse(BaseModel):
+    request_id: str
+    descriptor: ChildDescriptor
+    source_language: str
