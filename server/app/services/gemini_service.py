@@ -169,6 +169,135 @@ async def generate_poster_image(
     raise ValueError("No image returned by model")
 
 
+async def age_progress(
+    image_bytes: bytes,
+    current_age: int,
+    target_age: int,
+    gender: str,
+    description: str,
+) -> bytes:
+    client = get_client()
+
+    age_delta = target_age - current_age
+    prompt = (
+        f"TASK: Age-progression portrait. You MUST output an image.\n\n"
+        f"INPUT: A photo of a {gender} child currently aged {current_age}.\n"
+        f"OUTPUT: A photorealistic portrait of the same individual at age {target_age} "
+        f"({age_delta} years older).\n\n"
+        f"STRICT RULES — follow every rule:\n"
+        f"1. IDENTITY PRESERVATION: Keep the exact same face shape, bone structure, eye color, "
+        f"nose shape, ear shape, skin tone, and ethnicity. The person must be unmistakably "
+        f"recognisable as the same individual.\n"
+        f"2. AGE THE FACE NATURALLY: Apply realistic age-related changes for a {target_age}-year-old "
+        f"— adjust jawline definition, facial proportions, hairline, slight changes in skin texture. "
+        f"For ages 10-15 apply early adolescent changes; for 16-20 apply late adolescent maturity.\n"
+        f"3. BODY & POSTURE: Update body proportions to match typical {target_age}-year-old "
+        f"build for a {gender}.\n"
+        f"4. DO NOT change: ethnicity, eye color, distinguishing marks, or core facial geometry.\n"
+        f"5. PHOTO QUALITY: Output a sharp, well-lit, front-facing portrait photo. "
+        f"Neutral background. High detail on the face.\n"
+        f"6. Additional descriptor context: {description or 'none provided'}.\n"
+    )
+
+    response = await asyncio.to_thread(
+        client.models.generate_content,
+        model="gemini-3.1-flash-image",
+        contents=[
+            types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
+            prompt,
+        ],
+        config=types.GenerateContentConfig(response_modalities=["IMAGE", "TEXT"]),
+    )
+
+    for part in response.candidates[0].content.parts:
+        if part.inline_data:
+            return part.inline_data.data
+
+    raise ValueError("No image returned by model")
+
+
+async def enhance_image(image_bytes: bytes) -> bytes:
+    client = get_client()
+
+    prompt = (
+        "Enhance this photo: improve sharpness, correct lighting, reduce noise, "
+        "and boost clarity while preserving the subject's natural appearance. "
+        "Output a high-quality photorealistic image."
+    )
+
+    response = await asyncio.to_thread(
+        client.models.generate_content,
+        model="gemini-3.1-flash-lite-image",
+        contents=[
+            types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
+            prompt,
+        ],
+        config=types.GenerateContentConfig(response_modalities=["IMAGE"]),
+    )
+
+    for part in response.candidates[0].content.parts:
+        if part.inline_data:
+            return part.inline_data.data
+
+    raise ValueError("No image returned by model")
+
+
+async def edit_image(image_bytes: bytes, instruction: str) -> bytes:
+    client = get_client()
+
+    prompt = (
+        f"Edit this portrait photo according to the following instruction: {instruction}\n\n"
+        "STRICT RULES:\n"
+        "1. Apply ONLY the change described in the instruction. Change nothing else.\n"
+        "2. PRESERVE: the person's face, identity, expression, pose, background, and lighting exactly.\n"
+        "3. The edit must look photorealistic and seamlessly integrated — no visible artifacts.\n"
+        "4. Output the full portrait image with the edit applied."
+    )
+
+    response = await asyncio.to_thread(
+        client.models.generate_content,
+        model="gemini-3.1-flash-lite-image",
+        contents=[
+            types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
+            prompt,
+        ],
+        config=types.GenerateContentConfig(response_modalities=["IMAGE"]),
+    )
+
+    for part in response.candidates[0].content.parts:
+        if part.inline_data:
+            return part.inline_data.data
+
+    raise ValueError("No image returned by model")
+
+
+async def extract_description(text: str, source_language: str = "auto") -> dict:
+    client = get_client()
+
+    lang_hint = f"The text may be in {source_language}. " if source_language != "auto" else ""
+    prompt = (
+        f"{lang_hint}Extract the following child descriptor fields from the text as strict JSON "
+        "(no markdown, no extra text): "
+        '{"name": "str or null", "age": "int or null", "gender": "str or null", '
+        '"height_cm": "float or null", "skin_tone": "str or null", '
+        '"clothing_last_seen": "str or null", "distinguishing_marks": ["list of str"] or null}\n\n'
+        f"Text: {text}"
+    )
+
+    response = await asyncio.to_thread(
+        client.models.generate_content,
+        model=MODEL,
+        contents=[prompt],
+    )
+
+    raw = response.text or ""
+    clean = raw.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+    try:
+        return json.loads(clean)
+    except json.JSONDecodeError:
+        return {}
+
+
 async def generate_poster_text(descriptor: ChildDescriptor, language: str) -> str:
     client = get_client()
 
@@ -180,16 +309,9 @@ async def generate_poster_text(descriptor: ChildDescriptor, language: str) -> st
         f"Child details: {descriptor.model_dump_json()}"
     )
 
-    for attempt in range(3):
-        if attempt > 0:
-            await asyncio.sleep(2 ** attempt)
-        response = await asyncio.to_thread(
-            client.models.generate_content,
-            model=MODEL,
-            contents=prompt,
-        )
-        text = response.text or ""
-        if text:
-            return text
+    interaction = client.interactions.create(
+        model="gemini-3.5-flash",
+        input=prompt,
+    )
 
-    return f"[MISSING CHILD — {language} poster generation failed. Please retry.]"
+    return interaction.output_text

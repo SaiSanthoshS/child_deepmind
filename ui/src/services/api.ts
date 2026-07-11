@@ -8,6 +8,8 @@ import type {
   DispatchRequest,
   DispatchResponse,
   DispatchStatusResponse,
+  AgeProgressionResponse,
+  ImageEditResponse,
 } from '../types'
 
 const BASE = '/api/v1'
@@ -52,6 +54,31 @@ export async function generatePosters(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
+}
+
+export async function generateAgeProgression(
+  file: File,
+  currentAge: number,
+  targetAges: number[],
+  gender: string,
+  description: string,
+  childName?: string,
+): Promise<AgeProgressionResponse> {
+  const form = new FormData()
+  form.append('file', file)
+  form.append('current_age', String(currentAge))
+  form.append('target_ages', targetAges.join(','))
+  form.append('gender', gender)
+  form.append('description', description)
+  if (childName) form.append('child_name', childName)
+  return request<AgeProgressionResponse>('/age-progress', { method: 'POST', body: form })
+}
+
+export async function editImage(file: File, instruction: string): Promise<ImageEditResponse> {
+  const form = new FormData()
+  form.append('file', file)
+  form.append('instruction', instruction)
+  return request<ImageEditResponse>('/edit', { method: 'POST', body: form })
 }
 
 export async function dispatchAlert(body: DispatchRequest): Promise<DispatchResponse> {
