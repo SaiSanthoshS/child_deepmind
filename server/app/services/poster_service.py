@@ -7,6 +7,7 @@ from app.models.schemas import (
     ChildDescriptor,
 )
 from app.services.gemini_service import generate_poster_image, generate_poster_text
+from app.services import case_store
 
 LANGUAGE_NAMES = {
     Language.hindi: "Hindi",
@@ -77,6 +78,8 @@ async def generate_posters(
     other_posters = await asyncio.gather(
         *[_one(lang, name) for lang, name in other_languages.items()]
     )
+
+    case_store.save_case(case_id, descriptor, photo_base64)
 
     return PosterGenerateResponse(
         case_id=case_id,

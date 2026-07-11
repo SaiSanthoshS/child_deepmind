@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     base_dir: Path = Path(__file__).resolve().parent.parent.parent
     upload_dir: Path = Path(__file__).resolve().parent.parent.parent / "uploads"
     output_dir: Path = Path(__file__).resolve().parent.parent.parent / "outputs"
+    cases_dir: Path = Path(__file__).resolve().parent.parent.parent / "cases"
 
     @property
     def cors_origins_list(self) -> list[str]:
