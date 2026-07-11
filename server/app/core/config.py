@@ -5,7 +5,7 @@ from pathlib import Path
 
 class Settings(BaseSettings):
     gemini_api_key: str
-    gemini_image_model: str = "gemini-omni-flash-preview"
+    gemini_image_model: str = "gemini-3.1-flash-lite-image"
     imagen_model: str = "gemini-3.1-flash-lite-image"
     cors_origins: str = "http://localhost:5173"
     app_env: str = "development"

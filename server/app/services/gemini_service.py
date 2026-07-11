@@ -206,7 +206,7 @@ async def age_progress(
 
     response = await asyncio.to_thread(
         client.models.generate_content,
-        model="gemini-3.1-flash-image",
+        model="gemini-3.1-flash-lite-image",
         contents=[
             types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
             prompt,
