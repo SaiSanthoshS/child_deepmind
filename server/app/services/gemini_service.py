@@ -1,7 +1,30 @@
+import asyncio
 import base64
 import json
 from google import genai
+from google.genai import types
 from app.models.schemas import ChildDescriptor, TranscribeResponse
+from app.core.config import get_settings
+
+MODEL = "gemini-flash-latest"
+
+POSTER_LAYOUT_SPEC = """
+Canvas: 600 × 800 px, white background, portrait (3:4 ratio).
+Zone A — Header band (y 0–90 px, full width): solid red #CC0000.
+  Two lines of white bold sans-serif text, centered.
+  Line 1 (28 px bold): "{header_line1}"
+  Line 2 (18 px): "{header_line2}"
+Zone B — Photo area (y 90–330 px, full width): white background.
+  Child photo centered, scaled to fit 220 × 220 px, 2 px solid #888888 border.
+  If no photo provided, render a grey silhouette placeholder of the same size.
+Zone C — Details panel (y 330–650 px): white background, 20 px side padding.
+  13 px regular sans-serif; labels bold. Each field on its own line:
+  {detail_lines}
+Zone D — Contact band (y 650–800 px, full width): solid red #CC0000.
+  Line 1 (22 px bold white centered): "{contact_line1}"
+  Line 2 (13 px white centered): "{contact_line2}"
+No gradients, shadows, decorations, or elements outside these four zones.
+"""
 
 _client: genai.Client | None = None
 
@@ -9,36 +32,36 @@ _client: genai.Client | None = None
 def get_client() -> genai.Client:
     global _client
     if _client is None:
-        # Reads GEMINI_API_KEY from environment automatically
-        _client = genai.Client()
+        _client = genai.Client(api_key=get_settings().gemini_api_key)
     return _client
 
 
 async def transcribe_voice(audio_bytes: bytes, mime_type: str) -> TranscribeResponse:
     client = get_client()
 
-    b64_audio = base64.b64encode(audio_bytes).decode()
-
     prompt = (
         "You are a child welfare assistant. The audio contains a parent describing "
         "their missing child in any Indian language. Extract the following as strict JSON "
         "(no markdown, no extra text): "
-        '{"name": str|null, "age": int|null, "height_cm": float|null, "weight_kg": float|null, '
-        '"distinguishing_marks": str|null, "last_seen_location": str|null, '
-        '"last_seen_date": str|null, "clothing_description": str|null, "language_used": str|null}'
+        '{"name": "str or null", "age": "int or null", "height_cm": "float or null", '
+        '"weight_kg": "float or null", "distinguishing_marks": "str or null", '
+        '"last_seen_location": "str or null", "last_seen_date": "str or null", '
+        '"clothing_description": "str or null", "language_used": "str or null"}'
     )
 
-    interaction = client.interactions.create(
-        model="gemini-3.5-flash",
-        input=[
-            {"type": "text", "text": prompt},
-            {"type": "audio", "data": b64_audio, "mime_type": mime_type},
+    response = await asyncio.to_thread(
+        client.models.generate_content,
+        model=MODEL,
+        contents=[
+            prompt,
+            types.Part.from_bytes(data=audio_bytes, mime_type=mime_type),
         ],
     )
 
-    raw = interaction.output_text
+    raw = response.text or ""
+    clean = raw.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
     try:
-        data = json.loads(raw)
+        data = json.loads(clean)
     except json.JSONDecodeError:
         data = {}
 
@@ -52,28 +75,98 @@ async def transcribe_voice(audio_bytes: bytes, mime_type: str) -> TranscribeResp
 async def generate_age_progression_video(
     descriptor: ChildDescriptor, image_base64: str, target_ages: list[int]
 ) -> str:
-    # Gemini 3.5 Flash doesn't yet support video generation output.
-    # This calls the model to describe what the progression should look like
-    # as a placeholder until Veo / video generation is available via the API.
     client = get_client()
 
-    ages_str = " vs ".join(str(a) for a in target_ages)
+    ages_str = ", ".join(str(a) for a in target_ages)
     prompt = (
-        f"Describe in detail how this child would look at ages {ages_str}, "
-        "noting changes in facial features, height, and build. "
+        f"You are helping find a missing child. Describe in detail how this child "
+        f"would likely look at ages {ages_str}, noting changes in facial features, "
+        "height, and build. Be specific to help identification. "
         f"Child details: {descriptor.model_dump_json()}"
     )
 
-    interaction = client.interactions.create(
-        model="gemini-3.5-flash",
-        input=[
-            {"type": "text", "text": prompt},
-            {"type": "image", "data": image_base64, "mime_type": "image/jpeg"},
-        ],
+    contents: list = [prompt]
+    if image_base64:
+        image_bytes = base64.b64decode(image_base64)
+        contents.append(types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"))
+
+    response = await asyncio.to_thread(
+        client.models.generate_content,
+        model=MODEL,
+        contents=contents,
     )
 
-    # TODO: Replace return value with actual video URL once Veo API is available
-    return interaction.output_text
+    return response.text or ""
+
+
+async def generate_poster_image(
+    descriptor: ChildDescriptor,
+    language: str,
+    photo_base64: str = "",
+    reference_image_bytes: bytes | None = None,
+) -> bytes:
+    client = get_client()
+
+    detail_lines = "\n  ".join([
+        f"Name: {descriptor.name or 'Unknown'}",
+        f"Age: {descriptor.age or '?'} years",
+        f"Height: {descriptor.height_cm or '?'} cm  |  Weight: {descriptor.weight_kg or '?'} kg",
+        f"Last Seen: {descriptor.last_seen_location or '?'} on {descriptor.last_seen_date or '?'}",
+        f"Clothing: {descriptor.clothing_description or '?'}",
+        f"Marks: {descriptor.distinguishing_marks or 'None'}",
+    ])
+
+    if reference_image_bytes is None:
+        # Pass 1 — English reference poster with strict layout spec
+        layout = POSTER_LAYOUT_SPEC.format(
+            header_line1="MISSING CHILD",
+            header_line2="REPORT IMMEDIATELY — CALL NOW",
+            detail_lines=detail_lines,
+            contact_line1="HELPLINE: 1098  |  POLICE: 100",
+            contact_line2="If you have information, contact the nearest police station.",
+        )
+        prompt = (
+            "Create a MISSING CHILD alert poster image using this EXACT layout template — "
+            "do not deviate from any measurement, color, or zone boundary:\n"
+            + layout
+            + f"\nChild details: {descriptor.model_dump_json()}"
+        )
+        contents: list = [prompt]
+    else:
+        # Pass 2 — clone layout from English reference, translate text only
+        prompt = (
+            f"You are given a reference MISSING CHILD poster as the first image. "
+            f"Reproduce its EXACT layout pixel-for-pixel: identical four zones (red header band at top, "
+            f"photo in center-top, white details panel, red contact band at bottom), "
+            f"same proportions, same red color #CC0000, same font sizes and padding. "
+            f"The ONLY change: translate ALL visible text into {language}. "
+            f"Translate 'MISSING CHILD', 'REPORT IMMEDIATELY', all field labels and values, "
+            f"and 'HELPLINE: 1098 | POLICE: 100' — keep the numbers 1098 and 100 as-is. "
+            f"Do not alter layout, zone positions, colors, or photo placement in any way. "
+            f"Child details: {descriptor.model_dump_json()}"
+        )
+        contents = [
+            types.Part.from_bytes(data=reference_image_bytes, mime_type="image/jpeg"),
+            prompt,
+        ]
+
+    if photo_base64:
+        contents.append(
+            types.Part.from_bytes(data=base64.b64decode(photo_base64), mime_type="image/jpeg")
+        )
+
+    response = await asyncio.to_thread(
+        client.models.generate_content,
+        model="gemini-3.1-flash-lite-image",
+        contents=contents,
+        config=types.GenerateContentConfig(response_modalities=["IMAGE"]),
+    )
+
+    for part in response.candidates[0].content.parts:
+        if part.inline_data:
+            return part.inline_data.data
+
+    raise ValueError("No image returned by model")
 
 
 async def generate_poster_text(descriptor: ChildDescriptor, language: str) -> str:
@@ -81,14 +174,22 @@ async def generate_poster_text(descriptor: ChildDescriptor, language: str) -> st
 
     prompt = (
         f"Generate a MISSING CHILD alert poster text in {language} language only. "
-        "Format: MISSING CHILD header, then name, age, physical description, "
-        "last seen details, and contact number 112. Keep it concise and urgent. "
+        "Format it as: header (MISSING CHILD / LAPATA BACHCHA / equivalent), "
+        "name, age, physical description, last seen location and date, "
+        "contact helpline 1098 and police 100. Keep it urgent and concise. "
         f"Child details: {descriptor.model_dump_json()}"
     )
 
-    interaction = client.interactions.create(
-        model="gemini-3.5-flash",
-        input=prompt,
-    )
+    for attempt in range(3):
+        if attempt > 0:
+            await asyncio.sleep(2 ** attempt)
+        response = await asyncio.to_thread(
+            client.models.generate_content,
+            model=MODEL,
+            contents=prompt,
+        )
+        text = response.text or ""
+        if text:
+            return text
 
-    return interaction.output_text
+    return f"[MISSING CHILD — {language} poster generation failed. Please retry.]"

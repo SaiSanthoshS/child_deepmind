@@ -1,4 +1,5 @@
 import asyncio
+import threading
 from google import genai
 from app.services.gemini_service import get_client
 from app.models.schemas import (
@@ -71,21 +72,22 @@ async def _run_managed_agent_dispatch(
         "Return a JSON summary: {railway_sent: int, ngo_sent: int, police_sent: int}"
     )
 
-    try:
-        # Stream the agent interaction so long dispatch tasks don't time out
+    def _run_stream():
         stream = client.interactions.create(
             agent=AGENT_ID,
             input=task_prompt,
             environment="remote",
             stream=True,
         )
-
         output_lines = []
         for event in stream:
             if hasattr(event, "output_text") and event.output_text:
                 output_lines.append(event.output_text)
+        return output_lines
 
-        # Update channel statuses to done
+    try:
+        await asyncio.to_thread(_run_stream)
+
         for cs in status.channel_statuses:
             cs.sent = cs.total
             cs.status = "done"

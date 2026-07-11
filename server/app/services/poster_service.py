@@ -1,3 +1,4 @@
+import asyncio
 import base64
 from app.models.schemas import (
     PosterGenerateResponse,
@@ -5,7 +6,7 @@ from app.models.schemas import (
     Language,
     ChildDescriptor,
 )
-from app.services.gemini_service import generate_poster_text
+from app.services.gemini_service import generate_poster_image, generate_poster_text
 
 LANGUAGE_NAMES = {
     Language.hindi: "Hindi",
@@ -24,16 +25,56 @@ LANGUAGE_NAMES = {
 
 
 async def generate_posters(
-    case_id: str, descriptor: ChildDescriptor
+    case_id: str, descriptor: ChildDescriptor, photo_base64: str = ""
 ) -> PosterGenerateResponse:
-    # TODO: Use NB2 Lite to render image-based poster with translated text overlaid
-    # For now generates text posters encoded as base64 UTF-8
 
-    posters = []
-    for lang, name in LANGUAGE_NAMES.items():
-        text = await generate_poster_text(descriptor, name)
-        # Encode text as base64 (placeholder for actual image rendering)
-        b64 = base64.b64encode(text.encode()).decode()
-        posters.append(PosterVariant(language=lang, language_name=name, image_base64=b64))
+    # Pass 1: generate English poster — this becomes the layout reference
+    try:
+        reference_bytes = await generate_poster_image(descriptor, "English", photo_base64)
+        english_variant = PosterVariant(
+            language=Language.english,
+            language_name="English",
+            image_base64=base64.b64encode(reference_bytes).decode(),
+            mime_type="image/jpeg",
+        )
+    except Exception:
+        text = await generate_poster_text(descriptor, "English")
+        reference_bytes = None
+        english_variant = PosterVariant(
+            language=Language.english,
+            language_name="English",
+            image_base64=base64.b64encode(text.encode()).decode(),
+            mime_type="text/plain",
+        )
 
-    return PosterGenerateResponse(case_id=case_id, posters=posters)
+    # Pass 2: remaining 11 languages in parallel, each receives the reference image
+    other_languages = {k: v for k, v in LANGUAGE_NAMES.items() if k != Language.english}
+
+    async def _one(lang: Language, name: str) -> PosterVariant:
+        try:
+            img_bytes = await generate_poster_image(
+                descriptor, name, photo_base64, reference_image_bytes=reference_bytes
+            )
+            return PosterVariant(
+                language=lang,
+                language_name=name,
+                image_base64=base64.b64encode(img_bytes).decode(),
+                mime_type="image/jpeg",
+            )
+        except Exception:
+            text = await generate_poster_text(descriptor, name)
+            return PosterVariant(
+                language=lang,
+                language_name=name,
+                image_base64=base64.b64encode(text.encode()).decode(),
+                mime_type="text/plain",
+            )
+
+    other_posters = await asyncio.gather(
+        *[_one(lang, name) for lang, name in other_languages.items()]
+    )
+
+    return PosterGenerateResponse(
+        case_id=case_id,
+        posters=[english_variant, *other_posters],
+    )

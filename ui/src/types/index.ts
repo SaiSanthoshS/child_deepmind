@@ -31,6 +31,7 @@ export interface VideoGenerateRequest {
   case_id: string
   descriptor: ChildDescriptor
   target_ages: number[]
+  photo_base64?: string
 }
 
 export interface VideoGenerateResponse {
@@ -42,12 +43,14 @@ export interface VideoGenerateResponse {
 export interface PosterGenerateRequest {
   case_id: string
   descriptor: ChildDescriptor
+  photo_base64?: string
 }
 
 export interface PosterVariant {
   language: string
   language_name: string
   image_base64: string
+  mime_type: string
 }
 
 export interface PosterGenerateResponse {

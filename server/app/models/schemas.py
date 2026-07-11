@@ -36,6 +36,7 @@ class VideoGenerateRequest(BaseModel):
     case_id: str
     descriptor: ChildDescriptor
     target_ages: list[int] = [12, 14, 16]
+    photo_base64: str = ""
 
 
 class VideoGenerateResponse(BaseModel):
@@ -47,6 +48,7 @@ class VideoGenerateResponse(BaseModel):
 class PosterGenerateRequest(BaseModel):
     case_id: str
     descriptor: ChildDescriptor
+    photo_base64: str = ""
 
 
 class Language(str, Enum):
@@ -68,6 +70,7 @@ class PosterVariant(BaseModel):
     language: Language
     language_name: str
     image_base64: str
+    mime_type: str = "image/jpeg"
 
 
 class PosterGenerateResponse(BaseModel):

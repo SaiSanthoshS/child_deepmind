@@ -6,9 +6,10 @@ interface Props {
 
 export default function PosterGrid({ posters }: Props) {
   function downloadPoster(poster: PosterVariant) {
+    const isImage = poster.mime_type === 'image/jpeg' || poster.mime_type === 'image/png'
     const link = document.createElement('a')
-    link.href = `data:image/jpeg;base64,${poster.image_base64}`
-    link.download = `missing-child-poster-${poster.language}.jpg`
+    link.href = `data:${poster.mime_type};base64,${poster.image_base64}`
+    link.download = `missing-child-poster-${poster.language}.${isImage ? 'jpg' : 'txt'}`
     link.click()
   }
 
@@ -17,19 +18,29 @@ export default function PosterGrid({ posters }: Props) {
       {posters.map((poster) => (
         <div
           key={poster.language}
-          className="border border-gray-200 rounded-lg p-3 flex flex-col gap-2 bg-white shadow-sm"
+          className="border border-gray-200 rounded-lg overflow-hidden flex flex-col bg-white shadow-sm"
         >
-          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-2 py-1 bg-gray-50 border-b border-gray-100">
             {poster.language_name}
           </div>
-          <div className="text-xs text-gray-700 bg-gray-50 rounded p-2 max-h-28 overflow-y-auto whitespace-pre-wrap">
-            {atob(poster.image_base64)}
-          </div>
+
+          {poster.mime_type === 'image/jpeg' || poster.mime_type === 'image/png' ? (
+            <img
+              src={`data:${poster.mime_type};base64,${poster.image_base64}`}
+              alt={`Missing child poster in ${poster.language_name}`}
+              className="w-full object-contain"
+            />
+          ) : (
+            <div className="text-xs text-gray-700 bg-white p-2 max-h-40 overflow-y-auto whitespace-pre-wrap flex-1">
+              {atob(poster.image_base64)}
+            </div>
+          )}
+
           <button
             onClick={() => downloadPoster(poster)}
-            className="text-xs text-blue-600 hover:underline text-left"
+            className="text-xs text-blue-600 hover:bg-blue-50 px-2 py-1 text-left border-t border-gray-100 transition-colors"
           >
-            Download poster
+            ↓ Download
           </button>
         </div>
       ))}

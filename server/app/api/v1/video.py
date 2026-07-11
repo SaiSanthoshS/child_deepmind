@@ -10,6 +10,6 @@ async def age_progress(request: VideoGenerateRequest):
     return await create_age_progression_video(
         case_id=request.case_id,
         descriptor=request.descriptor,
-        image_base64="",  # TODO: retrieve from cache by case_id
+        image_base64=request.photo_base64,
         target_ages=request.target_ages,
     )

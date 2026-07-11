@@ -7,4 +7,4 @@ router = APIRouter(prefix="/poster", tags=["poster"])
 
 @router.post("/generate", response_model=PosterGenerateResponse)
 async def generate_poster(request: PosterGenerateRequest):
-    return await generate_posters(request.case_id, request.descriptor)
+    return await generate_posters(request.case_id, request.descriptor, request.photo_base64)
