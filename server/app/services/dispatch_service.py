@@ -1,6 +1,4 @@
 import asyncio
-import threading
-from google import genai
 from app.services.gemini_service import get_client
 from app.models.schemas import (
     DispatchResponse,
@@ -16,8 +14,6 @@ _dispatch_store: dict[str, DispatchStatusResponse] = {}
 RAILWAY_NETWORK_COUNT = 8000
 NGO_COUNT = 500
 POLICE_COUNT = 600
-
-AGENT_ID = "antigravity-preview-05-2026"
 
 
 async def dispatch_alert(
@@ -68,25 +64,15 @@ async def _run_managed_agent_dispatch(
         "1. Draft a concise missing-child alert message in English and Hindi.\n"
         "2. Simulate sending to railway network contacts (report count dispatched).\n"
         "3. Simulate sending to NGO WhatsApp groups (report count dispatched).\n"
-        "4. Simulate sending to police station contacts (report count dispatched).\n"
-        "Return a JSON summary: {railway_sent: int, ngo_sent: int, police_sent: int}"
+        "4. Simulate sending to police station contacts (report count dispatched)."
     )
 
-    def _run_stream():
-        stream = client.interactions.create(
-            agent=AGENT_ID,
-            input=task_prompt,
-            environment="remote",
-            stream=True,
-        )
-        output_lines = []
-        for event in stream:
-            if hasattr(event, "output_text") and event.output_text:
-                output_lines.append(event.output_text)
-        return output_lines
-
     try:
-        await asyncio.to_thread(_run_stream)
+        await asyncio.to_thread(
+            client.models.generate_content,
+            model="gemini-2.0-flash",
+            contents=task_prompt,
+        )
 
         for cs in status.channel_statuses:
             cs.sent = cs.total

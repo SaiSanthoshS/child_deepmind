@@ -53,7 +53,7 @@ export default function DispatchPage() {
     <div className="max-w-xl mx-auto px-4 py-10 flex flex-col gap-8">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Dispatch Alerts</h1>
-        <p className="text-gray-500 text-sm mt-1">Step 4 of 4 — Send to 8,000+ railway stations, NGOs & police</p>
+        <p className="text-gray-500 text-sm mt-1">Step 3 of 3 — Send to 8,000+ railway stations, NGOs & police</p>
       </div>
 
       {overallStatus === 'idle' && (
