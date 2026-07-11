@@ -43,47 +43,70 @@ export default function ReportPage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-10 flex flex-col gap-8">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Report Missing Child</h1>
-        <p className="text-gray-500 text-sm mt-1">Step 1 of 4 — Voice description & photo</p>
+    <div className="max-w-3xl mx-auto flex flex-col gap-6">
+      <div className="mb-8 text-center pt-8">
+        <h1 className="text-4xl font-bold tracking-tight mb-3 text-white">Report Missing Child</h1>
+        <p className="text-slate-300 text-lg">Provide voice description and upload a recent photo</p>
       </div>
 
-      <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <h2 className="font-semibold text-gray-800 mb-4">Describe your child (any language)</h2>
-        <VoiceRecorder onRecorded={handleAudio} disabled={loading} />
-        {descriptor && (
-          <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-800">
-            Detected: {descriptor.name ?? 'Unknown'}, Age {descriptor.age ?? '?'} — language: {descriptor.language_used ?? 'auto'}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <section className="mui-paper p-6 h-full flex flex-col">
+          <h2 className="text-xl font-medium mb-6 pb-2 border-b border-[var(--border-color)]">
+            1. Describe your child (any language)
+          </h2>
+          <div className="flex-1 flex flex-col justify-center">
+            <VoiceRecorder onRecorded={handleAudio} disabled={loading} />
+            {descriptor && (
+              <div className="mt-6 bg-[var(--success-bg)] text-[var(--success-text)] rounded px-4 py-3 flex items-start gap-3">
+                <div>
+                  <p className="font-medium">Description Detected</p>
+                  <p className="text-sm mt-1">
+                    Name: {descriptor.name ?? 'Unknown'} • Age: {descriptor.age ?? '?'} • Language: {descriptor.language_used ?? 'auto'}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
-        )}
-      </section>
+        </section>
 
-      <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <h2 className="font-semibold text-gray-800 mb-4">Upload a photo</h2>
-        <PhotoUpload onFile={handlePhoto} disabled={loading} />
-        {photoResult && (
-          <p className="mt-3 text-sm text-green-600">
-            Photo enhanced — {photoResult.variants.length} angle variants generated
-          </p>
-        )}
-      </section>
+        <section className="mui-paper p-6 h-full flex flex-col">
+          <h2 className="text-xl font-medium mb-6 pb-2 border-b border-[var(--border-color)]">
+            2. Upload a photo
+          </h2>
+          <div className="flex-1 flex flex-col justify-center">
+            <PhotoUpload onFile={handlePhoto} disabled={loading} />
+            {photoResult && (
+               <div className="mt-6 bg-[var(--success-bg)] text-[var(--success-text)] rounded px-4 py-3 flex items-center gap-3">
+                 <p className="text-sm">
+                   Photo enhanced — <span className="font-bold">{photoResult.variants.length}</span> angle variants generated
+                 </p>
+               </div>
+            )}
+          </div>
+        </section>
+      </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">{error}</div>
+        <div className="bg-[var(--error-bg)] text-[var(--error-text)] rounded px-4 py-3 text-sm">
+          {error}
+        </div>
       )}
 
       {loading && (
-        <p className="text-center text-sm text-blue-600 animate-pulse">Processing…</p>
+        <div className="flex justify-center my-4">
+          <div className="text-[var(--text-secondary)]">Processing...</div>
+        </div>
       )}
 
-      <button
-        onClick={proceed}
-        disabled={!descriptor && !photoResult}
-        className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 disabled:opacity-40 transition-colors"
-      >
-        Continue to Review →
-      </button>
+      <div className="mt-4 flex justify-end">
+        <button
+          onClick={proceed}
+          disabled={!descriptor && !photoResult}
+          className="mui-btn-primary"
+        >
+          CONTINUE TO REVIEW
+        </button>
+      </div>
     </div>
   )
 }

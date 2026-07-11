@@ -10,11 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "lucide-react": "^1.24.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-router-dom": "^7.18.1"
   },
   "devDependencies": {
+    "@rolldown/binding-win32-x64-msvc": "^1.1.5",
     "@tailwindcss/vite": "^4.3.2",
     "@types/node": "^24.13.2",
     "@types/react": "^19.2.17",

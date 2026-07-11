@@ -71,116 +71,125 @@ export default function GeneratePage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10 flex flex-col gap-8">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Generate Materials</h1>
-        <p className="text-gray-500 text-sm mt-1">Step 3 of 4 — Age-progression video & multilingual posters</p>
+    <div className="max-w-3xl mx-auto flex flex-col gap-6">
+      <div className="mb-8 text-center pt-8">
+        <h1 className="text-4xl font-bold tracking-tight mb-3 text-white">Generate Materials</h1>
+        <p className="text-slate-300 text-lg">Create age-progression video & multilingual posters</p>
       </div>
 
-      {/* Photo upload */}
-      <section className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-        <h2 className="font-semibold text-gray-800 mb-1">Child's Photo</h2>
-        <p className="text-xs text-gray-500 mb-3">
-          {photoResult
-            ? 'Photo carried over from previous step. You can replace it here.'
-            : 'Upload a photo to include in all posters and the age-progression.'}
-        </p>
-        <div className="flex items-center gap-4">
-          {effectivePhotoPreview && (
-            <img
-              src={effectivePhotoPreview}
-              alt="Child preview"
-              className="w-16 h-16 object-cover rounded-lg border border-gray-200"
-            />
-          )}
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="px-4 py-2 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-          >
-            {effectivePhotoPreview ? 'Replace photo' : 'Upload photo'}
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            className="hidden"
-            onChange={handlePhotoUpload}
-          />
-          {customPhotoB64 && (
+      <section className="mui-paper p-6">
+        <h2 className="text-xl font-medium mb-4 pb-2 border-b border-[var(--border-color)]">
+          Base Photo
+        </h2>
+        <div>
+          <p className="text-sm text-[var(--text-secondary)] mb-4">
+            {photoResult
+              ? 'Photo carried over from previous step. You can replace it here.'
+              : 'Upload a photo to include in all posters and the age-progression.'}
+          </p>
+          <div className="flex items-center gap-4">
+            {effectivePhotoPreview && (
+              <div className="p-1 border border-[var(--border-color)] rounded">
+                <img
+                  src={effectivePhotoPreview}
+                  alt="Child preview"
+                  className="w-16 h-16 object-cover rounded"
+                />
+              </div>
+            )}
             <button
               type="button"
-              onClick={() => { setCustomPhotoB64(''); setCustomPhotoPreview('') }}
-              className="text-xs text-red-500 hover:underline"
+              onClick={() => fileInputRef.current?.click()}
+              className="text-[var(--primary-color)] border border-[var(--primary-color)] px-4 py-1.5 rounded uppercase text-sm font-medium hover:opacity-80"
             >
-              Remove
+              {effectivePhotoPreview ? 'REPLACE PHOTO' : 'UPLOAD PHOTO'}
             </button>
-          )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={handlePhotoUpload}
+            />
+            {customPhotoB64 && (
+              <button
+                type="button"
+                onClick={() => { setCustomPhotoB64(''); setCustomPhotoPreview('') }}
+                className="text-[var(--error-text)] text-sm font-medium uppercase hover:opacity-80 px-3 py-1.5 rounded"
+              >
+                Remove
+              </button>
+            )}
+          </div>
         </div>
       </section>
 
-      {/* Generate button */}
       {!loading && posters.length === 0 && (
-        <button
-          onClick={generate}
-          className="w-full py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-colors"
-        >
-          Generate Age-Progression + 12 Language Posters
-        </button>
+        <div className="flex justify-center mt-4">
+          <button
+            onClick={generate}
+            className="mui-btn-primary w-full max-w-sm py-3 text-base"
+          >
+            GENERATE MATERIALS
+          </button>
+        </div>
       )}
 
-      {/* Loading state: language chips + spinner */}
       {loading && (
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-sm font-semibold text-gray-700">Generating 12 posters in 12 languages…</p>
-            <span className="text-xs text-gray-400">~30–40 s</span>
-          </div>
-          <div className="flex flex-wrap gap-2 mb-5">
+        <div className="mui-paper p-8 text-center flex flex-col items-center">
+          <p className="text-lg font-medium text-[var(--text-primary)] mb-4">
+            Generating materials... please wait.
+          </p>
+          <div className="flex flex-wrap justify-center gap-2 max-w-lg mb-4">
             {LANGUAGE_CHIPS.map((lang) => (
               <span
                 key={lang}
-                className="px-3 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-400 animate-pulse"
+                className="px-3 py-1 bg-[var(--border-color)] text-[var(--text-primary)] rounded-full text-xs"
               >
                 {lang}
               </span>
             ))}
           </div>
-          <div className="flex items-center gap-3">
-            <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin flex-shrink-0" />
-            <p className="text-xs text-gray-500">
-              Building consistent layout in all scripts — each poster shares the same template
-            </p>
-          </div>
+          <p className="text-sm text-[var(--text-secondary)]">
+            Building consistent layout in all scripts (~30s)
+          </p>
         </div>
       )}
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">{error}</div>
+        <div className="bg-[var(--error-bg)] text-[var(--error-text)] rounded px-4 py-3 text-sm">
+          {error}
+        </div>
       )}
 
       {videoOutput && (
-        <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <h2 className="font-semibold text-gray-800 mb-3">Age Progression</h2>
+        <section className="mui-paper p-6">
+          <h2 className="text-xl font-medium mb-6 pb-2 border-b border-[var(--border-color)]">
+            Age Progression Video
+          </h2>
           <AgeProgressVideo videoUrl={videoOutput} />
         </section>
       )}
 
       {posters.length > 0 && (
-        <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <h2 className="font-semibold text-gray-800 mb-4">Missing Child Posters — 12 Languages</h2>
+        <section className="mui-paper p-6">
+          <h2 className="text-xl font-medium mb-6 pb-2 border-b border-[var(--border-color)]">
+            Missing Child Posters (12 Languages)
+          </h2>
           <PosterGrid posters={posters} />
         </section>
       )}
 
       {(videoOutput || posters.length > 0) && (
-        <button
-          onClick={() => navigate('/dispatch', { state: { descriptor, caseId } })}
-          className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
-        >
-          Dispatch Alerts →
-        </button>
+        <div className="mt-4 flex justify-end">
+          <button
+            onClick={() => navigate('/dispatch', { state: { descriptor, caseId } })}
+            className="mui-btn-primary"
+          >
+            CONTINUE TO DISPATCH
+          </button>
+        </div>
       )}
     </div>
   )

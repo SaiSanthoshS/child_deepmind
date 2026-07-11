@@ -14,33 +14,36 @@ export default function PosterGrid({ posters }: Props) {
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {posters.map((poster) => (
         <div
           key={poster.language}
-          className="border border-gray-200 rounded-lg overflow-hidden flex flex-col bg-white shadow-sm"
+          className="flex flex-col border border-[var(--border-color)] rounded overflow-hidden shadow-sm"
         >
-          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-2 py-1 bg-gray-50 border-b border-gray-100">
+          <div className="text-xs font-bold text-[var(--text-primary)] uppercase tracking-wider px-3 py-2 bg-[var(--bg-color)] border-b border-[var(--border-color)]">
             {poster.language_name}
           </div>
 
-          {poster.mime_type === 'image/jpeg' || poster.mime_type === 'image/png' ? (
-            <img
-              src={`data:${poster.mime_type};base64,${poster.image_base64}`}
-              alt={`Missing child poster in ${poster.language_name}`}
-              className="w-full object-contain"
-            />
-          ) : (
-            <div className="text-xs text-gray-700 bg-white p-2 max-h-40 overflow-y-auto whitespace-pre-wrap flex-1">
-              {atob(poster.image_base64)}
-            </div>
-          )}
+          <div className="relative flex-1 bg-[var(--border-color)] flex items-center justify-center overflow-hidden min-h-[200px]">
+            {poster.mime_type === 'image/jpeg' || poster.mime_type === 'image/png' ? (
+              <img
+                src={`data:${poster.mime_type};base64,${poster.image_base64}`}
+                alt={`Missing child poster in ${poster.language_name}`}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="text-xs text-[var(--text-primary)] p-3 max-h-48 overflow-y-auto whitespace-pre-wrap w-full bg-[var(--paper-bg)]">
+                {atob(poster.image_base64)}
+              </div>
+            )}
+          </div>
 
           <button
             onClick={() => downloadPoster(poster)}
-            className="text-xs text-blue-600 hover:bg-blue-50 px-2 py-1 text-left border-t border-gray-100 transition-colors"
+            className="w-full bg-[var(--primary-color)] hover:bg-[var(--primary-hover)] text-[#ffffff] text-xs font-semibold py-3 px-3 flex items-center justify-center gap-2 uppercase transition-colors"
           >
-            ↓ Download
+            <span className="text-sm">📥</span>
+            DOWNLOAD
           </button>
         </div>
       ))}

@@ -14,41 +14,49 @@ export default function ReviewPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10 flex flex-col gap-8">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Review & Edit Details</h1>
-        <p className="text-gray-500 text-sm mt-1">Step 2 of 4 — Correct any errors from voice transcription</p>
+    <div className="max-w-3xl mx-auto flex flex-col gap-6">
+      <div className="mb-8 text-center pt-8">
+        <h1 className="text-4xl font-bold tracking-tight mb-3 text-white">Review & Edit Details</h1>
+        <p className="text-slate-300 text-lg">Correct any errors from voice transcription</p>
       </div>
 
       {photoResult && (
-        <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <h2 className="font-semibold text-gray-800 mb-4">Enhanced Photo Variants</h2>
-          <div className="flex gap-3 overflow-x-auto pb-2">
+        <section className="mui-paper p-6">
+          <h2 className="text-xl font-medium mb-6 pb-2 border-b border-[var(--border-color)]">
+            Enhanced Photo Variants
+          </h2>
+          <div className="flex gap-4 overflow-x-auto pb-4">
             {photoResult.variants.map((v) => (
-              <div key={v.angle} className="flex-shrink-0 text-center">
+              <div key={v.angle} className="flex-shrink-0 text-center w-32 md:w-40">
                 <img
                   src={`data:${v.mime_type};base64,${v.image_base64}`}
                   alt={v.angle}
-                  className="w-28 h-28 object-cover rounded-lg border border-gray-200"
+                  className="w-full h-32 md:h-40 object-cover rounded shadow-sm border border-[var(--border-color)]"
                 />
-                <p className="text-xs text-gray-500 mt-1 capitalize">{v.angle}</p>
+                <p className="text-sm text-[var(--text-secondary)] mt-2 capitalize font-medium">{v.angle}</p>
               </div>
             ))}
           </div>
         </section>
       )}
 
-      <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <h2 className="font-semibold text-gray-800 mb-4">Child Details</h2>
-        <ChildDescriptorForm descriptor={descriptor} onChange={setDescriptor} />
+      <section className="mui-paper p-6">
+        <h2 className="text-xl font-medium mb-6 pb-2 border-b border-[var(--border-color)]">
+          Child Details
+        </h2>
+        <div>
+          <ChildDescriptorForm descriptor={descriptor} onChange={setDescriptor} />
+        </div>
       </section>
 
-      <button
-        onClick={proceed}
-        className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
-      >
-        Generate Video & Posters →
-      </button>
+      <div className="mt-4 flex justify-end">
+        <button
+          onClick={proceed}
+          className="mui-btn-primary"
+        >
+          GENERATE VIDEO & POSTERS
+        </button>
+      </div>
     </div>
   )
 }

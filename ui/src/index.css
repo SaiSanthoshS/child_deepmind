@@ -1,11 +1,154 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 :root {
-  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
-  -webkit-font-smoothing: antialiased;
+  font-family: 'Inter', sans-serif;
+  color-scheme: light;
+  
+  /* Light Theme Variables */
+  --bg-color: #f8fafc; /* Very light slate */
+  --paper-bg: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --border-color: #e2e8f0;
+  --primary-color: #3b82f6; /* Vibrant blue */
+  --primary-hover: #2563eb;
+  
+  --success-bg: #edf7ed;
+  --success-text: #2e7d32;
+  --success-border: #c8e6c9;
+  
+  --warning-bg: #fff3e0;
+  --warning-text: #ed6c02;
+  --warning-border: #ffb74d;
+  
+  --error-bg: #fdeded;
+  --error-text: #d32f2f;
+  --error-border: #ef9a9a;
+  
+  --info-bg: #e3f2fd;
+  --info-text: #0288d1;
+  --info-border: #81d4fa;
+  
+  --paper-shadow: 0 10px 40px -10px rgba(0,0,0,0.08);
+  --hero-bg: linear-gradient(180deg, #020617 0%, #0f172a 100%);
+}
+
+.dark {
+  color-scheme: dark;
+  
+  /* Dark Theme Variables (Matching Sophisticated SaaS Dashboards) */
+  --bg-color: #030712; /* Deepest slate */
+  --paper-bg: #0f172a; /* Elevated slate */
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --border-color: #1e293b;
+  --primary-color: #3b82f6;
+  --primary-hover: #60a5fa;
+
+  --success-bg: rgba(46, 125, 50, 0.15);
+  --success-text: #81c784;
+  --success-border: rgba(46, 125, 50, 0.3);
+  
+  --warning-bg: rgba(237, 108, 2, 0.15);
+  --warning-text: #ffb74d;
+  --warning-border: rgba(237, 108, 2, 0.3);
+  
+  --error-bg: rgba(211, 47, 47, 0.15);
+  --error-text: #e57373;
+  --error-border: rgba(211, 47, 47, 0.3);
+  
+  --info-bg: rgba(2, 136, 209, 0.15);
+  --info-text: #4fc3f7;
+  --info-border: rgba(2, 136, 209, 0.3);
+  
+  --paper-shadow: 0 25px 50px -12px rgba(0,0,0,0.75), 0 0 30px rgba(59, 130, 246, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+  --hero-bg: radial-gradient(ellipse at top, rgba(30, 58, 138, 0.5) 0%, #030712 70%);
+}
+
+@theme {
+  --font-sans: 'Inter', sans-serif;
 }
 
 body {
   margin: 0;
-  background: #f9fafb;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Utilities mimicking MUI components */
+.mui-paper {
+  background-color: var(--paper-bg);
+  color: var(--text-primary);
+  transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, background-color 0.3s ease, color 0.3s ease;
+  border-radius: 16px;
+  box-shadow: var(--paper-shadow);
+  border: 1px solid var(--border-color);
+}
+
+.mui-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-sizing: border-box;
+  outline: 0px;
+  border: 0px;
+  margin: 0px;
+  cursor: pointer;
+  user-select: none;
+  vertical-align: middle;
+  appearance: none;
+  text-decoration: none;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.75;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+  min-width: 64px;
+  padding: 8px 22px;
+  border-radius: 9999px; /* Pill shape */
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  color: rgb(255, 255, 255);
+  background-color: var(--primary-color);
+  box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39);
+}
+.mui-btn-primary:hover {
+  background-color: var(--primary-hover);
+  box-shadow: 0 6px 20px 0 rgba(59, 130, 246, 0.5);
+  transform: translateY(-1px);
+}
+.mui-btn-primary:disabled {
+  color: var(--text-secondary);
+  box-shadow: none;
+  background-color: var(--border-color);
+  cursor: default;
+  opacity: 0.7;
+}
+
+.mui-input {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+  box-sizing: border-box;
+  cursor: text;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  position: relative;
+  border-radius: 8px;
+  padding: 14px 16px;
+  border: 1px solid var(--border-color);
+  transition: border-color 200ms cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease, color 0.3s ease;
+  background-color: var(--paper-bg);
+}
+.mui-input:focus {
+  border-color: var(--primary-color);
+  outline: 1px solid var(--primary-color);
 }

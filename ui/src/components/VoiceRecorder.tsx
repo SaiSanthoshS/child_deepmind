@@ -31,21 +31,26 @@ export default function VoiceRecorder({ onRecorded, disabled }: Props) {
   }
 
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className="flex flex-col items-center gap-4">
       <button
         onClick={recording ? stopRecording : startRecording}
         disabled={disabled}
-        className={`w-20 h-20 rounded-full text-white font-semibold shadow-lg transition-all
-          ${recording
-            ? 'bg-red-500 animate-pulse scale-110'
-            : 'bg-blue-600 hover:bg-blue-700'
-          } disabled:opacity-40`}
+        className={`w-20 h-20 rounded-full flex items-center justify-center transition-colors shadow-md ${
+          recording
+            ? 'bg-[var(--error-text)] text-[#ffffff] hover:opacity-80'
+            : 'bg-[var(--primary-color)] text-[#ffffff] hover:bg-[var(--primary-hover)]'
+        } disabled:opacity-50 disabled:cursor-not-allowed`}
       >
-        {recording ? 'Stop' : 'Record'}
+        <span className="text-3xl">{recording ? '⏹' : '🎤'}</span>
       </button>
-      <p className="text-sm text-gray-500">
-        {recording ? 'Recording… speak in any language' : 'Tap to record your child\'s description'}
-      </p>
+      <div className="text-center">
+        <p className={`text-lg font-medium ${recording ? 'text-[var(--error-text)]' : 'text-[var(--text-primary)]'}`}>
+          {recording ? 'Recording in progress...' : 'Tap to speak'}
+        </p>
+        <p className="text-sm text-[var(--text-secondary)] mt-1">
+          Speak in any language
+        </p>
+      </div>
     </div>
   )
 }
