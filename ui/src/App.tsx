@@ -2,13 +2,15 @@ import { BrowserRouter, Routes, Route, Navigate, NavLink } from 'react-router-do
 import ReportPage from './pages/ReportPage'
 import ReviewPage from './pages/ReviewPage'
 import GeneratePage from './pages/GeneratePage'
+import PosterPage from './pages/PosterPage'
 import DispatchPage from './pages/DispatchPage'
 
 const STEPS = [
   { path: '/report', label: '1. Report' },
   { path: '/review', label: '2. Review' },
   { path: '/generate', label: '3. Generate' },
-  { path: '/dispatch', label: '4. Dispatch' },
+  { path: '/posters', label: '4. Posters' },
+  { path: '/dispatch', label: '5. Dispatch' },
 ]
 
 export default function App() {
@@ -17,7 +19,7 @@ export default function App() {
       <div className="min-h-screen bg-gray-50">
         <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-6">
           <span className="font-bold text-blue-700 text-lg tracking-tight">MissingMesh</span>
-          <nav className="flex gap-4">
+          <nav className="flex gap-2">
             {STEPS.map((s) => (
               <NavLink
                 key={s.path}
@@ -40,6 +42,7 @@ export default function App() {
             <Route path="/report" element={<ReportPage />} />
             <Route path="/review" element={<ReviewPage />} />
             <Route path="/generate" element={<GeneratePage />} />
+            <Route path="/posters" element={<PosterPage />} />
             <Route path="/dispatch" element={<DispatchPage />} />
           </Routes>
         </main>
