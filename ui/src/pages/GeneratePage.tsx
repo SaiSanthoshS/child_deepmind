@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useRef, useState } from 'react'
 import AgeProgressionGrid from '../components/AgeProgressionGrid'
 import ImageEditor from '../components/ImageEditor'
+import ChildDescriptorForm from '../components/ChildDescriptorForm'
 import { generateAgeProgression } from '../services/api'
 import type { ChildDescriptor, PhotoEnhanceResponse, AgeProgressionResponse, AgeProgressionResult } from '../types'
 
@@ -10,11 +11,13 @@ const TARGET_AGE_OPTIONS = [10, 12, 14, 16, 18, 20, 25]
 export default function GeneratePage() {
   const { state } = useLocation()
   const navigate = useNavigate()
-  const descriptor: ChildDescriptor = state?.descriptor ?? {}
   const photoResult: PhotoEnhanceResponse | null = state?.photoResult ?? null
   const caseId: string = photoResult?.case_id ?? crypto.randomUUID()
 
-  // ── Photo upload ──────────────────────────────────────────────────────────
+  // ── Single source of truth for all child details ──────────────────────────
+  const [descriptor, setDescriptor] = useState<ChildDescriptor>(state?.descriptor ?? {})
+
+  // ── Photo ─────────────────────────────────────────────────────────────────
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [customPhotoB64, setCustomPhotoB64] = useState('')
@@ -38,10 +41,7 @@ export default function GeneratePage() {
     customPhotoPreview ||
     (photoResult?.variants[0] ? `data:image/jpeg;base64,${photoResult.variants[0].image_base64}` : '')
 
-  // ── Age Progression ───────────────────────────────────────────────────────
-  const [currentAge, setCurrentAge] = useState<number>(descriptor.age ?? 8)
-  const [gender, setGender] = useState<string>('male')
-  const [description, setDescription] = useState<string>('')
+  // ── Age Progression — pulled from descriptor, only target ages needed here ─
   const [selectedTargetAges, setSelectedTargetAges] = useState<number[]>([12, 16])
 
   function toggleTargetAge(age: number) {
@@ -57,6 +57,8 @@ export default function GeneratePage() {
   async function runAgeProgression() {
     if (!photoFile && !effectivePhotoB64) { setErrorAge('Please upload a photo first.'); return }
     if (selectedTargetAges.length === 0) { setErrorAge('Select at least one target age.'); return }
+    if (!descriptor.age) { setErrorAge("Please enter the child's current age in the details above."); return }
+
     setLoadingAge(true); setErrorAge(null)
     try {
       let file = photoFile
@@ -67,8 +69,11 @@ export default function GeneratePage() {
         file = new File([arr], 'photo.jpg', { type: 'image/jpeg' })
       }
       const res = await generateAgeProgression(
-        file, currentAge, selectedTargetAges, gender,
-        description || `${gender}, ${currentAge} years old`,
+        file,
+        descriptor.age,
+        selectedTargetAges.filter((a) => a > descriptor.age!),
+        descriptor.gender || 'unknown',
+        descriptor.distinguishing_marks || `${descriptor.gender || 'child'}, age ${descriptor.age}`,
         descriptor.name ?? undefined,
       )
       setAgeProgressResult(res)
@@ -93,14 +98,8 @@ export default function GeneratePage() {
     setEditedImageFile(null)
   }
 
-  function handleEdited(url: string, file: File) {
-    setEditedImageUrl(url)
-    setEditedImageFile(file)
-  }
-
   // ── Navigate to posters ───────────────────────────────────────────────────
   async function goToPosters() {
-    // Resolve the final photo base64 to pass along
     let finalPhotoB64 = effectivePhotoB64
 
     if (editedImageFile) {
@@ -122,72 +121,69 @@ export default function GeneratePage() {
     navigate('/posters', { state: { descriptor, caseId, photoB64: finalPhotoB64 } })
   }
 
-  const canProceed = !!ageProgressResult
+  // Derived: target ages must be greater than the current age
+  const currentAge = descriptor.age ?? 0
+  const validTargetAges = TARGET_AGE_OPTIONS.filter((a) => a > currentAge)
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10 flex flex-col gap-8">
+    <div className="max-w-2xl mx-auto px-4 py-10 flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Generate Materials</h1>
-        <p className="text-gray-500 text-sm mt-1">Step 3 of 5 — Age-progression & image editing</p>
+        <p className="text-gray-500 text-sm mt-1">Step 2 of 4</p>
       </div>
 
-      {/* ── Photo upload ── */}
-      <section className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-        <h2 className="font-semibold text-gray-800 mb-1">Child's Photo</h2>
-        <p className="text-xs text-gray-500 mb-3">
-          {photoResult ? 'Photo carried over from previous step. You can replace it here.' : 'Upload a photo to use for age-progression.'}
-        </p>
-        <div className="flex items-center gap-4">
-          {effectivePhotoPreview && (
-            <img src={effectivePhotoPreview} alt="Child preview" className="w-16 h-16 object-cover rounded-lg border border-gray-200" />
-          )}
-          <button type="button" onClick={() => fileInputRef.current?.click()}
-            className="px-4 py-2 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
-            {effectivePhotoPreview ? 'Replace photo' : 'Upload photo'}
-          </button>
-          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
-          {customPhotoB64 && (
-            <button type="button" onClick={() => { setPhotoFile(null); setCustomPhotoB64(''); setCustomPhotoPreview('') }}
-              className="text-xs text-red-500 hover:underline">Remove</button>
-          )}
+      {/* ── Section 1: Child Details + Photo ── */}
+      <section className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col gap-5">
+        <h2 className="font-semibold text-gray-800">Child Details</h2>
+
+        <ChildDescriptorForm descriptor={descriptor} onChange={setDescriptor} />
+
+        {/* Photo inline with details */}
+        <div className="border-t border-gray-100 pt-4">
+          <p className="text-sm font-medium text-gray-700 mb-2">Photo</p>
+          <div className="flex items-center gap-4">
+            {effectivePhotoPreview ? (
+              <img src={effectivePhotoPreview} alt="Child" className="w-20 h-20 object-cover rounded-xl border border-gray-200" />
+            ) : (
+              <div className="w-20 h-20 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-xs text-center">
+                No photo
+              </div>
+            )}
+            <div className="flex flex-col gap-2">
+              <button type="button" onClick={() => fileInputRef.current?.click()}
+                className="px-4 py-2 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                {effectivePhotoPreview ? 'Replace photo' : 'Upload photo'}
+              </button>
+              {customPhotoB64 && (
+                <button type="button" onClick={() => { setPhotoFile(null); setCustomPhotoB64(''); setCustomPhotoPreview('') }}
+                  className="text-xs text-red-500 hover:underline text-left">Remove</button>
+              )}
+              {photoResult && !customPhotoB64 && (
+                <p className="text-xs text-gray-400">Carried over from report step</p>
+              )}
+            </div>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+          </div>
         </div>
       </section>
 
-      {/* ── Age Progression ── */}
+      {/* ── Section 2: Age Progression ── */}
       <section className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <h2 className="font-semibold text-gray-800">Age Progression</h2>
-          <span className="text-xs font-semibold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full">Step 1</span>
-        </div>
+        <h2 className="font-semibold text-gray-800">Age Progression</h2>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-gray-600">Current age</label>
-            <input type="number" min={1} max={17} value={currentAge}
-              onChange={(e) => setCurrentAge(Number(e.target.value))}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-gray-600">Gender</label>
-            <select value={gender} onChange={(e) => setGender(e.target.value)}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-gray-600">Physical description (optional)</label>
-          <input type="text" value={description} onChange={(e) => setDescription(e.target.value)}
-            placeholder="e.g. brown eyes, black hair, wheat complexion"
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
-        </div>
+        {!descriptor.age && (
+          <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+            Enter the child's age above to enable age progression.
+          </p>
+        )}
 
         <div className="flex flex-col gap-2">
-          <label className="text-xs font-medium text-gray-600">Target ages to generate</label>
+          <label className="text-xs font-medium text-gray-600">
+            Generate images at these future ages
+            {descriptor.age ? <span className="text-gray-400 font-normal"> (current: {descriptor.age})</span> : null}
+          </label>
           <div className="flex flex-wrap gap-2">
-            {TARGET_AGE_OPTIONS.filter((a) => a > currentAge).map((age) => (
+            {validTargetAges.length > 0 ? validTargetAges.map((age) => (
               <button key={age} type="button" onClick={() => toggleTargetAge(age)}
                 className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
                   selectedTargetAges.includes(age)
@@ -196,13 +192,15 @@ export default function GeneratePage() {
                 }`}>
                 Age {age}
               </button>
-            ))}
+            )) : (
+              <p className="text-xs text-gray-400">Enter an age above to see options</p>
+            )}
           </div>
         </div>
 
         {!loadingAge && (
-          <button onClick={runAgeProgression}
-            className="w-full py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-colors">
+          <button onClick={runAgeProgression} disabled={!descriptor.age || selectedTargetAges.length === 0}
+            className="w-full py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 disabled:opacity-40 transition-colors">
             {ageProgressResult ? 'Regenerate' : 'Generate Age-Progression Images'}
           </button>
         )}
@@ -227,18 +225,16 @@ export default function GeneratePage() {
         )}
       </section>
 
-      {/* ── Image Editor ── */}
+      {/* ── Section 3: Edit Image ── */}
       {ageProgressResult && ageProgressResult.results.length > 0 && (
         <section className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="font-semibold text-gray-800">Edit Image</h2>
-              <p className="text-xs text-gray-500 mt-0.5">Select a base image, apply changes, then generate posters</p>
-            </div>
-            <span className="text-xs font-semibold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full">Step 2</span>
+          <div>
+            <h2 className="font-semibold text-gray-800">Edit Image</h2>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Select one of the age-progressed images to edit before generating posters. Optional.
+            </p>
           </div>
 
-          {/* Base image selector */}
           <div className="flex gap-3 overflow-x-auto pb-1">
             {ageProgressResult.results.map((r) => (
               <button key={r.target_age} type="button" onClick={() => selectBase(r)}
@@ -254,11 +250,11 @@ export default function GeneratePage() {
           </div>
 
           {!selectedBase && (
-            <p className="text-xs text-gray-400 text-center py-2">← Select an age-progressed image above to begin editing</p>
+            <p className="text-xs text-gray-400 text-center py-1">Select an image above to begin editing</p>
           )}
 
           {selectedBase && (
-            <ImageEditor imageUrl={selectedBase.image_url} onEdited={handleEdited} />
+            <ImageEditor imageUrl={selectedBase.image_url} onEdited={(url, file) => { setEditedImageUrl(url); setEditedImageFile(file) }} />
           )}
 
           {editedImageUrl && (
@@ -270,11 +266,9 @@ export default function GeneratePage() {
       )}
 
       {/* ── Generate Posters CTA ── */}
-      {canProceed && (
-        <button
-          onClick={goToPosters}
-          className="w-full py-4 bg-blue-600 text-white rounded-xl font-semibold text-base hover:bg-blue-700 transition-colors shadow-sm"
-        >
+      {ageProgressResult && (
+        <button onClick={goToPosters}
+          className="w-full py-4 bg-blue-600 text-white rounded-xl font-semibold text-base hover:bg-blue-700 transition-colors shadow-sm">
           Generate Posters →
         </button>
       )}

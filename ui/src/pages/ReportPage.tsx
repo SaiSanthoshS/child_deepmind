@@ -39,7 +39,7 @@ export default function ReportPage() {
   }
 
   function proceed() {
-    navigate('/review', { state: { descriptor, photoResult } })
+    navigate('/generate', { state: { descriptor, photoResult } })
   }
 
   return (
@@ -82,7 +82,7 @@ export default function ReportPage() {
         disabled={!descriptor && !photoResult}
         className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 disabled:opacity-40 transition-colors"
       >
-        Continue to Review →
+        Continue →
       </button>
     </div>
   )

@@ -51,24 +51,28 @@ async def generate_posters(
     other_languages = {k: v for k, v in LANGUAGE_NAMES.items() if k != Language.english}
 
     async def _one(lang: Language, name: str) -> PosterVariant:
-        try:
-            img_bytes = await generate_poster_image(
-                descriptor, name, photo_base64, reference_image_bytes=reference_bytes
-            )
-            return PosterVariant(
-                language=lang,
-                language_name=name,
-                image_base64=base64.b64encode(img_bytes).decode(),
-                mime_type="image/jpeg",
-            )
-        except Exception:
-            text = await generate_poster_text(descriptor, name)
-            return PosterVariant(
-                language=lang,
-                language_name=name,
-                image_base64=base64.b64encode(text.encode()).decode(),
-                mime_type="text/plain",
-            )
+        for attempt in range(3):
+            try:
+                img_bytes = await generate_poster_image(
+                    descriptor, name, photo_base64, reference_image_bytes=reference_bytes
+                )
+                return PosterVariant(
+                    language=lang,
+                    language_name=name,
+                    image_base64=base64.b64encode(img_bytes).decode(),
+                    mime_type="image/jpeg",
+                )
+            except Exception:
+                if attempt < 2:
+                    await asyncio.sleep(4 * (attempt + 1))
+                    continue
+                text = await generate_poster_text(descriptor, name)
+                return PosterVariant(
+                    language=lang,
+                    language_name=name,
+                    image_base64=base64.b64encode(text.encode()).decode(),
+                    mime_type="text/plain",
+                )
 
     other_posters = await asyncio.gather(
         *[_one(lang, name) for lang, name in other_languages.items()]

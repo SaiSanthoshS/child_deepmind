@@ -155,18 +155,23 @@ async def generate_poster_image(
             types.Part.from_bytes(data=base64.b64decode(photo_base64), mime_type="image/jpeg")
         )
 
-    response = await asyncio.to_thread(
-        client.models.generate_content,
-        model="gemini-3.1-flash-lite-image",
-        contents=contents,
-        config=types.GenerateContentConfig(response_modalities=["IMAGE"]),
-    )
+    for attempt in range(4):
+        response = await asyncio.to_thread(
+            client.models.generate_content,
+            model="gemini-3.1-flash-lite-image",
+            contents=contents,
+            config=types.GenerateContentConfig(response_modalities=["IMAGE"]),
+        )
 
-    for part in response.candidates[0].content.parts:
-        if part.inline_data:
-            return part.inline_data.data
+        for part in response.candidates[0].content.parts:
+            if part.inline_data:
+                return part.inline_data.data
 
-    raise ValueError("No image returned by model")
+        # No image returned — wait and retry (rate limit or transient failure)
+        if attempt < 3:
+            await asyncio.sleep(3 * (attempt + 1))
+
+    raise ValueError("No image returned by model after retries")
 
 
 async def age_progress(
@@ -206,7 +211,7 @@ async def age_progress(
             types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
             prompt,
         ],
-        config=types.GenerateContentConfig(response_modalities=["IMAGE", "TEXT"]),
+        config=types.GenerateContentConfig(response_modalities=["IMAGE"]),
     )
 
     for part in response.candidates[0].content.parts:
