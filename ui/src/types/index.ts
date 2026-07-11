@@ -58,6 +58,26 @@ export interface PosterGenerateResponse {
   posters: PosterVariant[]
 }
 
+export interface AgeProgressionResult {
+  target_age: number
+  image_url: string
+  filename: string
+}
+
+export interface AgeProgressionResponse {
+  request_id: string
+  child_name?: string
+  current_age: number
+  results: AgeProgressionResult[]
+  grid_url?: string
+}
+
+export interface ImageEditResponse {
+  request_id: string
+  edited_image_url: string
+  instruction_applied: string
+}
+
 export type DispatchChannel = 'railway' | 'ngo_whatsapp' | 'police'
 
 export interface ChannelStatus {
