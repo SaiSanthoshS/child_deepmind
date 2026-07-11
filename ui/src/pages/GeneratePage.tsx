@@ -128,8 +128,8 @@ export default function GeneratePage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-10 flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Generate Materials</h1>
-        <p className="text-gray-500 text-sm mt-1">Step 2 of 4</p>
+        <h1 className="text-2xl font-bold text-gray-900">Child Details & Photo</h1>
+        <p className="text-gray-500 text-sm mt-1">Step 1 of 3 — Enter details and generate age-progression images</p>
       </div>
 
       {/* ── Section 1: Child Details + Photo ── */}
