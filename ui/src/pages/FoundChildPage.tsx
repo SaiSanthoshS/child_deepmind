@@ -65,12 +65,11 @@ export default function FoundChildPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-gray-900">
-      {/* Navigation Header */}
       <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-sm sticky top-0 z-50">
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
           <span className="font-bold text-blue-600 text-xl tracking-tight">MissingMesh</span>
         </div>
-        <button 
+        <button
           onClick={() => navigate('/')}
           className="text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors flex items-center gap-1"
         >
@@ -79,19 +78,39 @@ export default function FoundChildPage() {
         </button>
       </header>
 
-      <div className="max-w-2xl mx-auto p-6 space-y-8">
-        {/* Intro */}
+      <div className="max-w-4xl mx-auto p-6 space-y-8">
+        {/* Registered Missing Children button */}
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="w-full flex items-center justify-between bg-white rounded-2xl border border-gray-200 shadow-sm px-6 py-4 hover:border-blue-400 hover:shadow-md transition-all group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition-colors">
+              <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            <div className="text-left">
+              <p className="text-sm font-bold text-gray-900">Registered Missing Children</p>
+              <p className="text-xs text-gray-400">View all cases grouped by city</p>
+            </div>
+          </div>
+          <svg className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+
+        {/* Search section */}
         <div className="space-y-1">
           <h1 className="text-2xl font-bold text-gray-900">I Found a Child</h1>
           <p className="text-gray-500 text-sm">Perform a forensic search to identify a child and alert their family.</p>
         </div>
 
-        {/* Upload Card */}
         <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
             <div className="space-y-4">
               <label className="text-sm font-semibold text-gray-700 block">Identity Photo</label>
-              <div 
+              <div
                 className="relative bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 aspect-square flex items-center justify-center cursor-pointer hover:border-blue-400 transition-all group overflow-hidden"
                 onClick={() => fileInputRef.current?.click()}
               >
@@ -112,8 +131,8 @@ export default function FoundChildPage() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-gray-700 block">Found Location</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={manualLocation}
                   onChange={(e) => setManualLocation(e.target.value)}
                   placeholder="e.g. Near HSR Layout Park"
@@ -129,7 +148,7 @@ export default function FoundChildPage() {
               </button>
             </div>
           </div>
-          
+
           {error && (
             <div className="p-3 bg-red-50 border border-red-100 rounded-xl text-red-600 text-xs font-medium">
               {error}
@@ -143,21 +162,19 @@ export default function FoundChildPage() {
             <h2 className="text-lg font-bold text-gray-900 border-b border-gray-200 pb-2">
               Potential Matches ({matches.length})
             </h2>
-            
+
             {matches.length > 0 ? (
               <div className="space-y-4">
                 {matches.map((match) => (
                   <div key={match.case_id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col sm:flex-row">
-                    {/* Record Image */}
                     <div className="w-full sm:w-48 h-48 bg-gray-100 shrink-0">
-                      <img 
-                        src={`data:image/jpeg;base64,${match.image_base64}`} 
-                        alt={match.name || 'Child'} 
+                      <img
+                        src={`data:image/jpeg;base64,${match.image_base64}`}
+                        alt={match.name || 'Child'}
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    
-                    {/* Record Info */}
+
                     <div className="p-5 flex flex-col justify-between flex-1 gap-4">
                       <div>
                         <div className="flex justify-between items-start">
@@ -169,9 +186,9 @@ export default function FoundChildPage() {
                           </span>
                         </div>
                         <p className="text-xs text-gray-500 mt-1 uppercase font-bold tracking-widest">
-                          {match.age} Yrs • {match.gender || 'Unknown'}
+                          {match.age} Yrs • {match.gender || 'Unknown'}{match.city ? ` • ${match.city}` : ''}
                         </p>
-                        
+
                         <div className="mt-3 space-y-1.5">
                           <div className="flex items-center gap-2 text-xs text-gray-600">
                             <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /></svg>
@@ -181,6 +198,28 @@ export default function FoundChildPage() {
                             <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                             <span>Missing since {match.last_seen_date || 'Unknown'}</span>
                           </div>
+                          {(match.height_cm || match.weight_kg) && (
+                            <div className="flex items-center gap-2 text-xs text-gray-600">
+                              <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                              <span>
+                                {match.height_cm ? `${match.height_cm} cm` : ''}
+                                {match.height_cm && match.weight_kg ? ' · ' : ''}
+                                {match.weight_kg ? `${match.weight_kg} kg` : ''}
+                              </span>
+                            </div>
+                          )}
+                          {match.clothing_description && (
+                            <div className="flex items-center gap-2 text-xs text-gray-600">
+                              <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h10M7 11h10M7 15h6" /></svg>
+                              <span>{match.clothing_description}</span>
+                            </div>
+                          )}
+                          {match.distinguishing_marks && (
+                            <div className="flex items-center gap-2 text-xs text-gray-600">
+                              <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                              <span>{match.distinguishing_marks}</span>
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -191,8 +230,8 @@ export default function FoundChildPage() {
                             "{match.rationale}"
                           </p>
                         </div>
-                        
-                        <button 
+
+                        <button
                           onClick={() => handleEmailFamily(match)}
                           disabled={emailingId === match.case_id || sentEmails.has(match.case_id)}
                           className={`w-full py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${

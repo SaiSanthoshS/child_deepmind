@@ -144,6 +144,11 @@ export interface MatchProfile {
   name?: string
   age?: number
   gender?: string
+  city?: string
+  height_cm?: number
+  weight_kg?: number
+  distinguishing_marks?: string
+  clothing_description?: string
   last_seen_location?: string
   last_seen_date?: string
   image_base64: string
@@ -151,4 +156,25 @@ export interface MatchProfile {
 
 export interface MatchResponse {
   matches: MatchProfile[]
+}
+
+export interface CaseRecord {
+  case_id: string
+  name?: string
+  age?: number
+  gender?: string
+  city?: string
+  height_cm?: number
+  weight_kg?: number
+  distinguishing_marks?: string
+  last_seen_location?: string
+  last_seen_date?: string
+  clothing_description?: string
+  photo_path?: string
+  created_at?: string
+  photo_base64?: string
+}
+
+export interface CasesResponse {
+  cases: CaseRecord[]
 }

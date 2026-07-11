@@ -15,6 +15,7 @@ import type {
   InterviewReplyRequest,
   InterviewReplyResponse,
   MatchResponse,
+  CasesResponse,
 } from '../types'
 
 const BASE = '/api/v1'
@@ -141,4 +142,8 @@ export async function sendFamilyEmail(caseId: string, name: string, foundLocatio
       uploaded_image_base64: uploadedImageBase64
     }),
   })
+}
+
+export async function getAllCases(): Promise<CasesResponse> {
+  return request<CasesResponse>('/cases')
 }

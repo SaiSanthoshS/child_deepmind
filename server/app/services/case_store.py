@@ -22,6 +22,7 @@ def init_db(cases_dir: Path) -> None:
             name                 TEXT,
             age                  INTEGER,
             gender               TEXT,
+            city                 TEXT,
             height_cm            REAL,
             weight_kg            REAL,
             distinguishing_marks TEXT,
@@ -32,6 +33,12 @@ def init_db(cases_dir: Path) -> None:
             created_at           TEXT
         )
     """)
+    # Migrate existing DBs that pre-date the city column
+    try:
+        con.execute("ALTER TABLE cases ADD COLUMN city TEXT")
+        con.commit()
+    except Exception:
+        pass
     con.commit()
     con.close()
 
@@ -58,16 +65,17 @@ def save_case(case_id: str, descriptor: ChildDescriptor, photo_base64: str) -> s
     con.execute(
         """
         INSERT OR REPLACE INTO cases
-            (case_id, name, age, gender, height_cm, weight_kg,
+            (case_id, name, age, gender, city, height_cm, weight_kg,
              distinguishing_marks, last_seen_location, last_seen_date,
              clothing_description, photo_path, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             case_id,
             descriptor.name,
             descriptor.age,
             getattr(descriptor, "gender", None),
+            getattr(descriptor, "city", None),
             descriptor.height_cm,
             descriptor.weight_kg,
             descriptor.distinguishing_marks,

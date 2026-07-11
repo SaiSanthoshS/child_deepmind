@@ -4,6 +4,7 @@ import GeneratePage from './pages/GeneratePage'
 import PosterPage from './pages/PosterPage'
 import DispatchPage from './pages/DispatchPage'
 import FoundChildPage from './pages/FoundChildPage'
+import DashboardPage from './pages/DashboardPage'
 
 const STEPS = [
   { path: '/generate', label: 'Details & Photo' },
@@ -62,6 +63,7 @@ export default function App() {
             <Route path="/posters" element={<PosterPage />} />
             <Route path="/dispatch" element={<DispatchPage />} />
             <Route path="/found-child" element={<FoundChildPage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
