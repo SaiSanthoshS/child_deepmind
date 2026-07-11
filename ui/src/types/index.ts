@@ -136,3 +136,19 @@ export interface InterviewReplyResponse {
   missing_fields: string[]
   done: boolean
 }
+
+export interface MatchProfile {
+  similarity_score: number
+  rationale: string
+  case_id: string
+  name?: string
+  age?: number
+  gender?: string
+  last_seen_location?: string
+  last_seen_date?: string
+  image_base64: string
+}
+
+export interface MatchResponse {
+  matches: MatchProfile[]
+}

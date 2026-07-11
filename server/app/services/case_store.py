@@ -109,3 +109,10 @@ def search_cases(query: str) -> list[dict]:
     ).fetchall()
     con.close()
     return [dict(r) for r in rows]
+
+def get_all_cases() -> list[dict]:
+    con = sqlite3.connect(_db())
+    con.row_factory = sqlite3.Row
+    rows = con.execute("SELECT * FROM cases ORDER BY created_at DESC").fetchall()
+    con.close()
+    return [dict(r) for r in rows]

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings
-from app.api.v1 import voice, photo, video, poster, dispatch, age_progression, cases, interview
+from app.api.v1 import voice, photo, video, poster, dispatch, age_progression, cases, interview, matcher
 from app.services import case_store
 from fastapi.staticfiles import StaticFiles
 import os
@@ -32,9 +32,9 @@ app.include_router(photo.router, prefix=API_PREFIX)
 app.include_router(video.router, prefix=API_PREFIX)
 app.include_router(poster.router, prefix=API_PREFIX)
 app.include_router(dispatch.router, prefix=API_PREFIX)
-app.include_router(age_progression.router, prefix=API_PREFIX)
 app.include_router(cases.router, prefix=f"{API_PREFIX}/cases")
 app.include_router(interview.router, prefix=API_PREFIX)
+app.include_router(matcher.router, prefix=API_PREFIX)
 
 
 @app.get("/health")

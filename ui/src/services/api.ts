@@ -14,6 +14,7 @@ import type {
   InterviewStartResponse,
   InterviewReplyRequest,
   InterviewReplyResponse,
+  MatchResponse,
 } from '../types'
 
 const BASE = '/api/v1'
@@ -85,6 +86,14 @@ export async function editImage(file: File, instruction: string): Promise<ImageE
   return request<ImageEditResponse>('/edit', { method: 'POST', body: form })
 }
 
+export async function matchFoundChild(photo: File, lat?: number, lng?: number): Promise<MatchResponse> {
+  const form = new FormData()
+  form.append('photo', photo)
+  if (lat !== undefined) form.append('lat', String(lat))
+  if (lng !== undefined) form.append('lng', String(lng))
+  return request<MatchResponse>('/match-found-child', { method: 'POST', body: form })
+}
+
 export async function dispatchAlert(body: DispatchRequest): Promise<DispatchResponse> {
   return request<DispatchResponse>('/dispatch/alert', {
     method: 'POST',
@@ -118,5 +127,18 @@ export async function replyInterview(body: InterviewReplyRequest): Promise<Inter
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
+  })
+}
+
+export async function sendFamilyEmail(caseId: string, name: string, foundLocation: string, uploadedImageBase64: string): Promise<{ status: string }> {
+  return request<{ status: string }>('/send-family-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      case_id: caseId,
+      name,
+      found_location: foundLocation,
+      uploaded_image_base64: uploadedImageBase64
+    }),
   })
 }

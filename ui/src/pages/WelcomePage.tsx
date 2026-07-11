@@ -40,13 +40,22 @@ export default function WelcomePage() {
           ))}
         </div>
 
-        {/* CTA */}
-        <button
-          onClick={() => navigate('/generate')}
-          className="mt-2 px-12 py-5 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xl font-bold rounded-2xl shadow-2xl shadow-blue-900/50 transition-all duration-150 ring-2 ring-blue-500/30 hover:ring-blue-400/50"
-        >
-          Report Missing Child
-        </button>
+        {/* CTAs */}
+        <div className="mt-2 flex flex-col sm:flex-row items-center gap-4 w-full justify-center">
+          <button
+            onClick={() => navigate('/generate')}
+            className="w-full sm:w-auto px-10 py-5 bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 active:scale-95 text-white text-xl font-bold rounded-2xl shadow-[0_20px_50px_rgba(59,130,246,0.3)] transition-all duration-150 ring-2 ring-blue-500/20"
+          >
+            Report Missing Child
+          </button>
+
+          <button
+            onClick={() => navigate('/found-child')}
+            className="w-full sm:w-auto px-10 py-5 bg-gradient-to-br from-indigo-600 to-violet-700 hover:from-indigo-500 hover:to-violet-600 active:scale-95 text-white text-xl font-bold rounded-2xl shadow-[0_20px_50px_rgba(79,70,229,0.3)] transition-all duration-150 ring-2 ring-indigo-500/20"
+          >
+            I Found a Child
+          </button>
+        </div>
 
         <p className="text-gray-600 text-xs">
           All data is processed locally and never stored beyond the session.

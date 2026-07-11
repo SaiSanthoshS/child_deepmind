@@ -320,3 +320,39 @@ async def generate_poster_text(descriptor: ChildDescriptor, language: str) -> st
     )
 
     return interaction.output_text
+
+
+async def compare_faces(uploaded_bytes: bytes, db_image_bytes: bytes) -> dict:
+    client = get_client()
+
+    prompt = (
+        "TASK: Probabilistic Biometric Facial Matching.\n"
+        "Compare Photo 1 (Found Child) with Photo 2 (Missing Child Record).\n"
+        "Output a strict JSON object: {\"similarity_score\": <int 0-100>, \"rationale\": \"<brief technical explanation>\"}\n"
+        "CRITICAL EDGE CASES:\n"
+        "- IGNORE clothing color/style, hair length/style, lighting, and background.\n"
+        "- ACCOUNT FOR AGE PROGRESSION: The same child may look slightly older or younger. Focus on invariant facial geometry (eye spacing, ear structure, nose bridge, lip shape, chin).\n"
+        "SCORING RULES (STRICT):\n"
+        "0-40: Completely different people. Mismatched facial geometry. (Different bone structure, different identity).\n"
+        "41-69: Low probability. Superficial similarities only (e.g. same race/gender) but core geometry does not align.\n"
+        "70-85: High probability. Strong match in permanent facial geometry. Likely the same person with age progression or significant angle/lighting changes.\n"
+        "86-100: Definite match. Unmistakably the exact same person, regardless of different clothing, hair, age, or background.\n"
+        "If it is clearly the same child wearing a different shirt or at a slightly different age, SCORE ABOVE 85."
+    )
+
+    response = await asyncio.to_thread(
+        client.models.generate_content,
+        model=MODEL,
+        contents=[
+            prompt,
+            types.Part.from_bytes(data=uploaded_bytes, mime_type="image/jpeg"),
+            types.Part.from_bytes(data=db_image_bytes, mime_type="image/jpeg"),
+        ],
+    )
+
+    raw = response.text or ""
+    clean = raw.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+    try:
+        return json.loads(clean)
+    except json.JSONDecodeError:
+        return {"similarity_score": 0, "rationale": f"AI analysis failed to generate valid data. Raw: {raw[:50]}"}

@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     imagen_model: str = "gemini-3.1-flash-lite-image"
     cors_origins: str = "http://localhost:5173"
     app_env: str = "development"
+    smtp_password: str = ""
 
     # ── File storage ──
     base_dir: Path = Path(__file__).resolve().parent.parent.parent

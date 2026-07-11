@@ -171,7 +171,7 @@ class InterviewReplyRequest(BaseModel):
 class InterviewReplyResponse(BaseModel):
     session_id: str
     environment_id: str
-    question: str          # next question, or "" if done
+    question: str
     updated_descriptor: ChildDescriptor
     missing_fields: list[str]
     done: bool
