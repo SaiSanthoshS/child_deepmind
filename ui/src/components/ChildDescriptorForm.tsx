@@ -1,4 +1,5 @@
 import type { ChildDescriptor } from '../types'
+import { Box, TextField } from '@mui/material'
 
 interface Props {
   descriptor: ChildDescriptor
@@ -25,18 +26,19 @@ export default function ChildDescriptorForm({ descriptor, onChange }: Props) {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3 }}>
       {FIELDS.map(({ key, label, type }) => (
-        <div key={key} className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-gray-700">{label}</label>
-          <input
-            type={type ?? 'text'}
-            value={descriptor[key] ?? ''}
-            onChange={(e) => handleChange(key, e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+        <TextField
+          key={key}
+          label={label}
+          type={type ?? 'text'}
+          value={descriptor[key] ?? ''}
+          onChange={(e) => handleChange(key, e.target.value)}
+          fullWidth
+          variant="outlined"
+          slotProps={type === 'date' ? { inputLabel: { shrink: true } } : undefined}
+        />
       ))}
-    </div>
+    </Box>
   )
 }

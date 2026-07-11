@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Card, CardContent, Typography, Button, Box, Alert } from '@mui/material'
 import VoiceRecorder from '../components/VoiceRecorder'
 import PhotoUpload from '../components/PhotoUpload'
 import { transcribeVoice, enhancePhoto } from '../services/api'
@@ -43,47 +44,60 @@ export default function ReportPage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-10 flex flex-col gap-8">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Report Missing Child</h1>
-        <p className="text-gray-500 text-sm mt-1">Step 1 of 4 — Voice description & photo</p>
-      </div>
+    <Box sx={{ maxWidth: '600px', mx: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <Box>
+        <Typography variant="h1" gutterBottom>Report Missing Child</Typography>
+        <Typography variant="subtitle1" color="text.secondary">Step 1 of 4 — Voice description & photo</Typography>
+      </Box>
 
-      <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <h2 className="font-semibold text-gray-800 mb-4">Describe your child (any language)</h2>
-        <VoiceRecorder onRecorded={handleAudio} disabled={loading} />
-        {descriptor && (
-          <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-800">
-            Detected: {descriptor.name ?? 'Unknown'}, Age {descriptor.age ?? '?'} — language: {descriptor.language_used ?? 'auto'}
-          </div>
-        )}
-      </section>
+      <Card>
+        <CardContent sx={{ p: 4 }}>
+          <Typography variant="h6" gutterBottom>Describe your child (any language)</Typography>
+          <Box sx={{ mt: 2 }}>
+            <VoiceRecorder onRecorded={handleAudio} disabled={loading} />
+          </Box>
+          {descriptor && (
+            <Alert severity="success" sx={{ mt: 3, borderRadius: 2 }}>
+              Detected: <strong>{descriptor.name ?? 'Unknown'}</strong>, Age {descriptor.age ?? '?'} — language: {descriptor.language_used ?? 'auto'}
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
 
-      <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <h2 className="font-semibold text-gray-800 mb-4">Upload a photo</h2>
-        <PhotoUpload onFile={handlePhoto} disabled={loading} />
-        {photoResult && (
-          <p className="mt-3 text-sm text-green-600">
-            Photo enhanced — {photoResult.variants.length} angle variants generated
-          </p>
-        )}
-      </section>
+      <Card>
+        <CardContent sx={{ p: 4 }}>
+          <Typography variant="h6" gutterBottom>Upload a photo</Typography>
+          <Box sx={{ mt: 2 }}>
+            <PhotoUpload onFile={handlePhoto} disabled={loading} />
+          </Box>
+          {photoResult && (
+            <Alert severity="success" sx={{ mt: 3, borderRadius: 2 }}>
+              Photo enhanced — {photoResult.variants.length} angle variants generated
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">{error}</div>
+        <Alert severity="error" sx={{ borderRadius: 2 }}>{error}</Alert>
       )}
 
       {loading && (
-        <p className="text-center text-sm text-blue-600 animate-pulse">Processing…</p>
+        <Typography align="center" color="primary.main" className="animate-pulse">
+          Processing…
+        </Typography>
       )}
 
-      <button
+      <Button
+        variant="contained"
+        size="large"
+        fullWidth
         onClick={proceed}
         disabled={!descriptor && !photoResult}
-        className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 disabled:opacity-40 transition-colors"
+        sx={{ py: 2, fontSize: '1.1rem', borderRadius: 3 }}
       >
         Continue to Review →
-      </button>
-    </div>
+      </Button>
+    </Box>
   )
 }

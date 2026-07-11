@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import { Card, CardContent, Typography, Button, Box, Alert, CircularProgress, Chip } from '@mui/material'
 import PosterGrid from '../components/PosterGrid'
 import { generatePosters } from '../services/api'
 import type { ChildDescriptor, PosterVariant } from '../types'
@@ -38,81 +39,90 @@ export default function PosterPage() {
   useEffect(() => { generate() }, [])
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-10 flex flex-col gap-8">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Missing Child Posters</h1>
-          <p className="text-gray-500 text-sm mt-1">Step 4 of 5 — 12 languages generated from the edited image</p>
-        </div>
+    <Box sx={{ maxWidth: '900px', mx: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <Box>
+          <Typography variant="h1" gutterBottom>Missing Child Posters</Typography>
+          <Typography variant="subtitle1" color="text.secondary">Step 4 of 5 — 12 languages generated from the edited image</Typography>
+        </Box>
         {posters.length > 0 && (
-          <button
-            onClick={generate}
-            className="text-sm text-gray-500 hover:text-gray-800 border border-gray-300 rounded-lg px-3 py-1.5 transition-colors"
-          >
+          <Button variant="outlined" size="small" onClick={generate}>
             Regenerate
-          </button>
+          </Button>
         )}
-      </div>
+      </Box>
 
       {/* Loading state */}
       {loading && (
-        <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 flex flex-col gap-5">
-          <div className="flex items-center justify-between">
-            <p className="font-semibold text-gray-700">Generating 12 posters in 12 languages…</p>
-            <span className="text-xs text-gray-400">~30–40 s</span>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {LANGUAGE_CHIPS.map((lang) => (
-              <span
-                key={lang}
-                className="px-3 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-400 animate-pulse"
-              >
-                {lang}
-              </span>
-            ))}
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin flex-shrink-0" />
-            <p className="text-xs text-gray-500">
-              Building consistent layout in all scripts — each poster shares the same template
-            </p>
-          </div>
-        </div>
+        <Card>
+          <CardContent sx={{ p: 4, display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography variant="h6">Generating 12 posters in 12 languages…</Typography>
+              <Typography variant="caption" color="text.secondary">~30–40 s</Typography>
+            </Box>
+            
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {LANGUAGE_CHIPS.map((lang) => (
+                <Chip
+                  key={lang}
+                  label={lang}
+                  size="small"
+                  color="primary"
+                  variant="outlined"
+                  sx={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}
+                />
+              ))}
+            </Box>
+            
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <CircularProgress size={24} />
+              <Typography variant="body2" color="text.secondary">
+                Building consistent layout in all scripts — each poster shares the same template
+              </Typography>
+            </Box>
+          </CardContent>
+        </Card>
       )}
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-700 flex items-start gap-3">
-          <span className="text-red-400 mt-0.5">⚠</span>
-          <div>
-            <p className="font-medium mb-1">Failed to generate posters</p>
-            <p className="text-xs">{error}</p>
-            <button onClick={generate} className="mt-2 text-xs text-red-600 underline hover:no-underline">
+        <Alert
+          severity="error"
+          action={
+            <Button color="inherit" size="small" onClick={generate}>
               Try again
-            </button>
-          </div>
-        </div>
+            </Button>
+          }
+        >
+          <Typography variant="subtitle2">Failed to generate posters</Typography>
+          <Typography variant="body2">{error}</Typography>
+        </Alert>
       )}
 
       {/* Poster grid */}
       {posters.length > 0 && (
-        <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-sm font-semibold text-gray-700">{posters.length} posters ready</p>
-            <p className="text-xs text-gray-400">Click any poster to download</p>
-          </div>
-          <PosterGrid posters={posters} />
-        </section>
+        <Card>
+          <CardContent sx={{ p: 4 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+              <Typography variant="subtitle2" color="text.primary">{posters.length} posters ready</Typography>
+              <Typography variant="caption" color="text.secondary">Click any poster to download</Typography>
+            </Box>
+            <PosterGrid posters={posters} />
+          </CardContent>
+        </Card>
       )}
 
       {/* Navigation */}
       {posters.length > 0 && (
-        <button
+        <Button
+          variant="contained"
+          size="large"
+          fullWidth
           onClick={() => navigate('/dispatch', { state: { descriptor, caseId } })}
-          className="w-full py-4 bg-blue-600 text-white rounded-xl font-semibold text-base hover:bg-blue-700 transition-colors shadow-sm"
+          sx={{ py: 2, fontSize: '1.1rem', borderRadius: 3 }}
         >
           Dispatch Alerts →
-        </button>
+        </Button>
       )}
-    </div>
+    </Box>
   )
 }

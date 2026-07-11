@@ -104,3 +104,13 @@ export interface DispatchStatusResponse {
   channel_statuses: ChannelStatus[]
   dispatched_at?: string
 }
+
+export interface MatchProfile {
+  similarity_score: number
+  case_detail: string
+  image_base64: string
+}
+
+export interface MatchResponse {
+  matches: MatchProfile[]
+}

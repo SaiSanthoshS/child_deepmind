@@ -10,6 +10,7 @@ import type {
   DispatchStatusResponse,
   AgeProgressionResponse,
   ImageEditResponse,
+  MatchResponse,
 } from '../types'
 
 const BASE = '/api/v1'
@@ -91,4 +92,12 @@ export async function dispatchAlert(body: DispatchRequest): Promise<DispatchResp
 
 export async function getDispatchStatus(caseId: string): Promise<DispatchStatusResponse> {
   return request<DispatchStatusResponse>(`/dispatch/status/${caseId}`)
+}
+
+export async function matchFoundChild(photo: File, lat?: number, lng?: number): Promise<MatchResponse> {
+  const form = new FormData()
+  form.append('photo', photo)
+  if (lat !== undefined) form.append('lat', String(lat))
+  if (lng !== undefined) form.append('lng', String(lng))
+  return request<MatchResponse>('/match-found-child', { method: 'POST', body: form })
 }

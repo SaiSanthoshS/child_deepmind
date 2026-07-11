@@ -1,5 +1,6 @@
 import { useLocation } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
+import { Card, CardContent, Typography, Button, Box, Alert } from '@mui/material'
 import DispatchPanel from '../components/DispatchPanel'
 import { dispatchAlert, getDispatchStatus } from '../services/api'
 import type { ChildDescriptor, ChannelStatus } from '../types'
@@ -50,47 +51,56 @@ export default function DispatchPage() {
   useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current) }, [])
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-10 flex flex-col gap-8">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dispatch Alerts</h1>
-        <p className="text-gray-500 text-sm mt-1">Step 4 of 4 — Send to 8,000+ railway stations, NGOs & police</p>
-      </div>
+    <Box sx={{ maxWidth: '600px', mx: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <Box>
+        <Typography variant="h1" gutterBottom>Dispatch Alerts</Typography>
+        <Typography variant="subtitle1" color="text.secondary">Step 5 of 5 — Send to 8,000+ railway stations, NGOs & police</Typography>
+      </Box>
 
       {overallStatus === 'idle' && (
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 text-center">
-          <p className="text-gray-600 mb-6">
-            Ready to dispatch <strong>missing child alert</strong> for {descriptor.name ?? 'this child'} simultaneously to:
-          </p>
-          <ul className="text-sm text-gray-500 text-left mb-6 space-y-1 list-disc list-inside">
-            <li>8,000 railway station networks</li>
-            <li>500 NGO WhatsApp groups</li>
-            <li>600 local police stations</li>
-          </ul>
-          <button
-            onClick={dispatch}
-            disabled={loading || !caseId}
-            className="w-full py-3 bg-red-600 text-white rounded-xl font-bold text-lg hover:bg-red-700 disabled:opacity-40 transition-colors"
-          >
-            DISPATCH NOW
-          </button>
-        </div>
+        <Card>
+          <CardContent sx={{ p: 4, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Typography variant="body1" color="text.secondary">
+              Ready to dispatch <strong>missing child alert</strong> for {descriptor.name ?? 'this child'} simultaneously to:
+            </Typography>
+            
+            <Box component="ul" sx={{ textAlign: 'left', color: 'text.secondary', typography: 'body2', mx: 'auto', display: 'inline-block' }}>
+              <li>8,000 railway station networks</li>
+              <li>500 NGO WhatsApp groups</li>
+              <li>600 local police stations</li>
+            </Box>
+            
+            <Button
+              variant="contained"
+              color="error"
+              size="large"
+              onClick={dispatch}
+              disabled={loading || !caseId}
+              sx={{ py: 2, fontSize: '1.25rem', fontWeight: 'bold', borderRadius: 3, mt: 1 }}
+            >
+              DISPATCH NOW
+            </Button>
+          </CardContent>
+        </Card>
       )}
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">{error}</div>
+        <Alert severity="error" sx={{ borderRadius: 2 }}>{error}</Alert>
       )}
 
       {channelStatuses.length > 0 && (
-        <DispatchPanel channelStatuses={channelStatuses} overallStatus={overallStatus} />
+        <Box sx={{ mt: 2 }}>
+          <DispatchPanel channelStatuses={channelStatuses} overallStatus={overallStatus} />
+        </Box>
       )}
 
       {overallStatus === 'done' && (
-        <div className="bg-green-50 border border-green-300 rounded-2xl p-6 text-center">
-          <div className="text-4xl mb-2">✅</div>
-          <p className="font-bold text-green-800 text-lg">Alert dispatched successfully</p>
-          <p className="text-sm text-green-600 mt-1">All networks notified in local languages</p>
-        </div>
+        <Alert severity="success" icon={false} sx={{ py: 3, borderRadius: 3, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <Typography variant="h3" sx={{ mb: 1 }}>✅</Typography>
+          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Alert dispatched successfully</Typography>
+          <Typography variant="body2">All networks notified in local languages</Typography>
+        </Alert>
       )}
-    </div>
+    </Box>
   )
 }

@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useRef, useState } from 'react'
+import { Card, CardContent, Typography, Button, Box, TextField, Select, MenuItem, FormControl, InputLabel, Chip, CircularProgress, Alert } from '@mui/material'
 import AgeProgressionGrid from '../components/AgeProgressionGrid'
 import ImageEditor from '../components/ImageEditor'
 import { generateAgeProgression } from '../services/api'
@@ -100,7 +101,6 @@ export default function GeneratePage() {
 
   // ── Navigate to posters ───────────────────────────────────────────────────
   async function goToPosters() {
-    // Resolve the final photo base64 to pass along
     let finalPhotoB64 = effectivePhotoB64
 
     if (editedImageFile) {
@@ -125,159 +125,194 @@ export default function GeneratePage() {
   const canProceed = !!ageProgressResult
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10 flex flex-col gap-8">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Generate Materials</h1>
-        <p className="text-gray-500 text-sm mt-1">Step 3 of 5 — Age-progression & image editing</p>
-      </div>
+    <Box sx={{ maxWidth: '800px', mx: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <Box>
+        <Typography variant="h1" gutterBottom>Generate Materials</Typography>
+        <Typography variant="subtitle1" color="text.secondary">Step 3 of 5 — Age-progression & image editing</Typography>
+      </Box>
 
       {/* ── Photo upload ── */}
-      <section className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-        <h2 className="font-semibold text-gray-800 mb-1">Child's Photo</h2>
-        <p className="text-xs text-gray-500 mb-3">
-          {photoResult ? 'Photo carried over from previous step. You can replace it here.' : 'Upload a photo to use for age-progression.'}
-        </p>
-        <div className="flex items-center gap-4">
-          {effectivePhotoPreview && (
-            <img src={effectivePhotoPreview} alt="Child preview" className="w-16 h-16 object-cover rounded-lg border border-gray-200" />
-          )}
-          <button type="button" onClick={() => fileInputRef.current?.click()}
-            className="px-4 py-2 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
-            {effectivePhotoPreview ? 'Replace photo' : 'Upload photo'}
-          </button>
-          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
-          {customPhotoB64 && (
-            <button type="button" onClick={() => { setPhotoFile(null); setCustomPhotoB64(''); setCustomPhotoPreview('') }}
-              className="text-xs text-red-500 hover:underline">Remove</button>
-          )}
-        </div>
-      </section>
+      <Card>
+        <CardContent sx={{ p: 4 }}>
+          <Typography variant="h6" gutterBottom>Child's Photo</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            {photoResult ? 'Photo carried over from previous step. You can replace it here.' : 'Upload a photo to use for age-progression.'}
+          </Typography>
+          
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+            {effectivePhotoPreview && (
+              <img src={effectivePhotoPreview} alt="Child preview" className="w-16 h-16 object-cover rounded-lg border border-gray-700 shadow-sm" />
+            )}
+            <Button variant="outlined" onClick={() => fileInputRef.current?.click()}>
+              {effectivePhotoPreview ? 'Replace photo' : 'Upload photo'}
+            </Button>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+            {customPhotoB64 && (
+              <Button color="error" size="small" onClick={() => { setPhotoFile(null); setCustomPhotoB64(''); setCustomPhotoPreview('') }}>
+                Remove
+              </Button>
+            )}
+          </Box>
+        </CardContent>
+      </Card>
 
       {/* ── Age Progression ── */}
-      <section className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <h2 className="font-semibold text-gray-800">Age Progression</h2>
-          <span className="text-xs font-semibold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full">Step 1</span>
-        </div>
+      <Card>
+        <CardContent sx={{ p: 4, display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Typography variant="h6">Age Progression</Typography>
+            <Chip label="Step 1" color="primary" size="small" />
+          </Box>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-gray-600">Current age</label>
-            <input type="number" min={1} max={17} value={currentAge}
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3 }}>
+            <TextField
+              label="Current age"
+              type="number"
+              value={currentAge}
               onChange={(e) => setCurrentAge(Number(e.target.value))}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-gray-600">Gender</label>
-            <select value={gender} onChange={(e) => setGender(e.target.value)}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-            </select>
-          </div>
-        </div>
+              slotProps={{ htmlInput: { min: 1, max: 17 } }}
+              fullWidth
+            />
+            <FormControl fullWidth>
+              <InputLabel>Gender</InputLabel>
+              <Select
+                value={gender}
+                label="Gender"
+                onChange={(e) => setGender(e.target.value)}
+              >
+                <MenuItem value="male">Male</MenuItem>
+                <MenuItem value="female">Female</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-gray-600">Physical description (optional)</label>
-          <input type="text" value={description} onChange={(e) => setDescription(e.target.value)}
+          <TextField
+            label="Physical description (optional)"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
             placeholder="e.g. brown eyes, black hair, wheat complexion"
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <label className="text-xs font-medium text-gray-600">Target ages to generate</label>
-          <div className="flex flex-wrap gap-2">
-            {TARGET_AGE_OPTIONS.filter((a) => a > currentAge).map((age) => (
-              <button key={age} type="button" onClick={() => toggleTargetAge(age)}
-                className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
-                  selectedTargetAges.includes(age)
-                    ? 'bg-indigo-600 text-white border-indigo-600'
-                    : 'bg-white text-gray-600 border-gray-300 hover:border-indigo-400'
-                }`}>
-                Age {age}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {!loadingAge && (
-          <button onClick={runAgeProgression}
-            className="w-full py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-colors">
-            {ageProgressResult ? 'Regenerate' : 'Generate Age-Progression Images'}
-          </button>
-        )}
-
-        {loadingAge && (
-          <div className="flex items-center gap-3 py-2">
-            <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin flex-shrink-0" />
-            <p className="text-sm text-gray-500">
-              Generating {selectedTargetAges.length} image{selectedTargetAges.length > 1 ? 's' : ''}… ~20–40 s
-            </p>
-          </div>
-        )}
-
-        {errorAge && <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">{errorAge}</div>}
-
-        {ageProgressResult && (
-          <AgeProgressionGrid
-            results={ageProgressResult.results}
-            gridUrl={ageProgressResult.grid_url}
-            currentAge={ageProgressResult.current_age}
+            fullWidth
           />
-        )}
-      </section>
+
+          <Box>
+            <Typography variant="body2" color="text.secondary" gutterBottom>Target ages to generate</Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {TARGET_AGE_OPTIONS.filter((a) => a > currentAge).map((age) => (
+                <Chip
+                  key={age}
+                  label={`Age ${age}`}
+                  clickable
+                  onClick={() => toggleTargetAge(age)}
+                  color={selectedTargetAges.includes(age) ? "primary" : "default"}
+                  variant={selectedTargetAges.includes(age) ? "filled" : "outlined"}
+                />
+              ))}
+            </Box>
+          </Box>
+
+          {!loadingAge && (
+            <Button
+              variant="contained"
+              fullWidth
+              onClick={runAgeProgression}
+              sx={{ py: 1.5 }}
+            >
+              {ageProgressResult ? 'Regenerate' : 'Generate Age-Progression Images'}
+            </Button>
+          )}
+
+          {loadingAge && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 1 }}>
+              <CircularProgress size={24} />
+              <Typography variant="body2" color="text.secondary">
+                Generating {selectedTargetAges.length} image{selectedTargetAges.length > 1 ? 's' : ''}… ~20–40 s
+              </Typography>
+            </Box>
+          )}
+
+          {errorAge && <Alert severity="error">{errorAge}</Alert>}
+
+          {ageProgressResult && (
+            <Box sx={{ mt: 2 }}>
+              <AgeProgressionGrid
+                results={ageProgressResult.results}
+                gridUrl={ageProgressResult.grid_url}
+                currentAge={ageProgressResult.current_age}
+              />
+            </Box>
+          )}
+        </CardContent>
+      </Card>
 
       {/* ── Image Editor ── */}
       {ageProgressResult && ageProgressResult.results.length > 0 && (
-        <section className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="font-semibold text-gray-800">Edit Image</h2>
-              <p className="text-xs text-gray-500 mt-0.5">Select a base image, apply changes, then generate posters</p>
-            </div>
-            <span className="text-xs font-semibold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full">Step 2</span>
-          </div>
+        <Card>
+          <CardContent sx={{ p: 4, display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+              <Box>
+                <Typography variant="h6">Edit Image</Typography>
+                <Typography variant="body2" color="text.secondary">Select a base image, apply changes, then generate posters</Typography>
+              </Box>
+              <Chip label="Step 2" color="primary" size="small" />
+            </Box>
 
-          {/* Base image selector */}
-          <div className="flex gap-3 overflow-x-auto pb-1">
-            {ageProgressResult.results.map((r) => (
-              <button key={r.target_age} type="button" onClick={() => selectBase(r)}
-                className={`flex-shrink-0 flex flex-col items-center gap-1 p-1.5 rounded-xl border-2 transition-colors ${
-                  selectedBase?.target_age === r.target_age
-                    ? 'border-indigo-500 bg-indigo-50'
-                    : 'border-gray-200 hover:border-indigo-300 bg-white'
-                }`}>
-                <img src={r.image_url} alt={`Age ${r.target_age}`} className="w-20 h-20 object-cover rounded-lg" />
-                <span className="text-xs font-medium text-gray-600">Age {r.target_age}</span>
-              </button>
-            ))}
-          </div>
+            <Box sx={{ display: 'flex', gap: 2, overflowX: 'auto', pb: 1 }}>
+              {ageProgressResult.results.map((r) => (
+                <Box
+                  key={r.target_age}
+                  onClick={() => selectBase(r)}
+                  sx={{
+                    flexShrink: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 1,
+                    p: 1,
+                    borderRadius: 2,
+                    cursor: 'pointer',
+                    border: '2px solid',
+                    borderColor: selectedBase?.target_age === r.target_age ? 'primary.main' : 'divider',
+                    bgcolor: selectedBase?.target_age === r.target_age ? 'action.selected' : 'background.paper',
+                    '&:hover': { borderColor: 'primary.light' }
+                  }}
+                >
+                  <img src={r.image_url} alt={`Age ${r.target_age}`} className="w-20 h-20 object-cover rounded-lg" />
+                  <Typography variant="caption">Age {r.target_age}</Typography>
+                </Box>
+              ))}
+            </Box>
 
-          {!selectedBase && (
-            <p className="text-xs text-gray-400 text-center py-2">← Select an age-progressed image above to begin editing</p>
-          )}
+            {!selectedBase && (
+              <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 2 }}>
+                ← Select an age-progressed image above to begin editing
+              </Typography>
+            )}
 
-          {selectedBase && (
-            <ImageEditor imageUrl={selectedBase.image_url} onEdited={handleEdited} />
-          )}
+            {selectedBase && (
+              <Box sx={{ mt: 1 }}>
+                <ImageEditor imageUrl={selectedBase.image_url} onEdited={handleEdited} />
+              </Box>
+            )}
 
-          {editedImageUrl && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-xs text-green-700 font-medium">
-              ✓ Edited image ready — posters will use this version
-            </div>
-          )}
-        </section>
+            {editedImageUrl && (
+              <Alert severity="success">✓ Edited image ready — posters will use this version</Alert>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {/* ── Generate Posters CTA ── */}
       {canProceed && (
-        <button
+        <Button
+          variant="contained"
+          size="large"
+          fullWidth
           onClick={goToPosters}
-          className="w-full py-4 bg-blue-600 text-white rounded-xl font-semibold text-base hover:bg-blue-700 transition-colors shadow-sm"
+          sx={{ py: 2, fontSize: '1.1rem', borderRadius: 3 }}
         >
           Generate Posters →
-        </button>
+        </Button>
       )}
-    </div>
+    </Box>
   )
 }

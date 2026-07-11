@@ -315,3 +315,33 @@ async def generate_poster_text(descriptor: ChildDescriptor, language: str) -> st
     )
 
     return interaction.output_text
+
+
+async def compare_faces(uploaded_bytes: bytes, db_image_bytes: bytes) -> dict:
+    client = get_client()
+
+    prompt = (
+        "You are an expert image similarity analyzer. You are given two images. "
+        "Analyze the facial features, bone structure, eye shape, nose shape, and overall facial geometry. "
+        "Compare the two faces and determine if they belong to the same person. "
+        "Provide a similarity score from 0 to 100, where 100 is a perfect match and 0 is completely different. "
+        "Output your response strictly as JSON with the following schema (no markdown, no extra text): "
+        '{"similarity_score": <int>, "rationale": "<string>"}'
+    )
+
+    response = await asyncio.to_thread(
+        client.models.generate_content,
+        model=MODEL,
+        contents=[
+            types.Part.from_bytes(data=uploaded_bytes, mime_type="image/jpeg"),
+            types.Part.from_bytes(data=db_image_bytes, mime_type="image/jpeg"),
+            prompt,
+        ],
+    )
+
+    raw = response.text or ""
+    clean = raw.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+    try:
+        return json.loads(clean)
+    except json.JSONDecodeError:
+        return {"similarity_score": 0, "rationale": "Failed to parse response."}

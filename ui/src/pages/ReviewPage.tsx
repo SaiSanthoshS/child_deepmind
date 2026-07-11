@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import { Card, CardContent, Typography, Button, Box } from '@mui/material'
 import ChildDescriptorForm from '../components/ChildDescriptorForm'
 import type { ChildDescriptor, PhotoEnhanceResponse } from '../types'
 
@@ -14,41 +15,52 @@ export default function ReviewPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10 flex flex-col gap-8">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Review & Edit Details</h1>
-        <p className="text-gray-500 text-sm mt-1">Step 2 of 4 — Correct any errors from voice transcription</p>
-      </div>
+    <Box sx={{ maxWidth: '800px', mx: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <Box>
+        <Typography variant="h1" gutterBottom>Review & Edit Details</Typography>
+        <Typography variant="subtitle1" color="text.secondary">Step 2 of 4 — Correct any errors from voice transcription</Typography>
+      </Box>
 
       {photoResult && (
-        <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <h2 className="font-semibold text-gray-800 mb-4">Enhanced Photo Variants</h2>
-          <div className="flex gap-3 overflow-x-auto pb-2">
-            {photoResult.variants.map((v) => (
-              <div key={v.angle} className="flex-shrink-0 text-center">
-                <img
-                  src={`data:${v.mime_type};base64,${v.image_base64}`}
-                  alt={v.angle}
-                  className="w-28 h-28 object-cover rounded-lg border border-gray-200"
-                />
-                <p className="text-xs text-gray-500 mt-1 capitalize">{v.angle}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+        <Card>
+          <CardContent sx={{ p: 4 }}>
+            <Typography variant="h6" gutterBottom>Enhanced Photo Variants</Typography>
+            <Box sx={{ display: 'flex', gap: 3, overflowX: 'auto', pb: 2, mt: 2 }}>
+              {photoResult.variants.map((v) => (
+                <Box key={v.angle} sx={{ flexShrink: 0, textAlign: 'center' }}>
+                  <img
+                    src={`data:${v.mime_type};base64,${v.image_base64}`}
+                    alt={v.angle}
+                    className="w-28 h-28 object-cover rounded-lg border border-gray-700 shadow-sm"
+                  />
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1, textTransform: 'capitalize' }}>
+                    {v.angle}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          </CardContent>
+        </Card>
       )}
 
-      <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <h2 className="font-semibold text-gray-800 mb-4">Child Details</h2>
-        <ChildDescriptorForm descriptor={descriptor} onChange={setDescriptor} />
-      </section>
+      <Card>
+        <CardContent sx={{ p: 4 }}>
+          <Typography variant="h6" gutterBottom>Child Details</Typography>
+          <Box sx={{ mt: 3 }}>
+            <ChildDescriptorForm descriptor={descriptor} onChange={setDescriptor} />
+          </Box>
+        </CardContent>
+      </Card>
 
-      <button
+      <Button
+        variant="contained"
+        size="large"
+        fullWidth
         onClick={proceed}
-        className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+        sx={{ py: 2, fontSize: '1.1rem', borderRadius: 3 }}
       >
         Generate Video & Posters →
-      </button>
-    </div>
+      </Button>
+    </Box>
   )
 }
