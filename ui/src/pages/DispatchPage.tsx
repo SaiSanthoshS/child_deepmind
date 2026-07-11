@@ -81,7 +81,12 @@ export default function DispatchPage() {
       )}
 
       {channelStatuses.length > 0 && (
-        <DispatchPanel channelStatuses={channelStatuses} overallStatus={overallStatus} />
+        <DispatchPanel
+          channelStatuses={channelStatuses}
+          overallStatus={overallStatus}
+          dispatching={overallStatus === 'dispatching'}
+          city={descriptor.city}
+        />
       )}
 
       {overallStatus === 'done' && (

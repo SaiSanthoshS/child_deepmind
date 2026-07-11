@@ -2,6 +2,7 @@ export interface ChildDescriptor {
   name?: string
   age?: number
   gender?: string
+  city?: string
   height_cm?: number
   weight_kg?: number
   distinguishing_marks?: string
@@ -104,4 +105,34 @@ export interface DispatchStatusResponse {
   overall_status: string
   channel_statuses: ChannelStatus[]
   dispatched_at?: string
+}
+
+// ── Live Interview Agent ─────────────────────────────────────────────────────
+
+export interface InterviewStartRequest {
+  descriptor: ChildDescriptor
+  detected_language: string
+}
+
+export interface InterviewStartResponse {
+  session_id: string
+  environment_id: string
+  question: string
+  missing_fields: string[]
+  done: boolean
+}
+
+export interface InterviewReplyRequest {
+  session_id: string
+  environment_id: string
+  user_text: string
+}
+
+export interface InterviewReplyResponse {
+  session_id: string
+  environment_id: string
+  question: string
+  updated_descriptor: ChildDescriptor
+  missing_fields: string[]
+  done: boolean
 }

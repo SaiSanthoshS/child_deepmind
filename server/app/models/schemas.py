@@ -6,6 +6,8 @@ from enum import Enum
 class ChildDescriptor(BaseModel):
     name: Optional[str] = None
     age: Optional[int] = None
+    gender: Optional[str] = None
+    city: Optional[str] = None
     height_cm: Optional[float] = None
     weight_kg: Optional[float] = None
     distinguishing_marks: Optional[str] = None
@@ -146,3 +148,30 @@ class DescriptorResponse(BaseModel):
     request_id: str
     descriptor: ChildDescriptor
     source_language: str
+
+
+# ── Live Interview Agent ─────────────────────────────────────────────────────
+
+class InterviewStartRequest(BaseModel):
+    descriptor: ChildDescriptor
+    detected_language: str = "English"
+
+class InterviewStartResponse(BaseModel):
+    session_id: str
+    environment_id: str
+    question: str
+    missing_fields: list[str]
+    done: bool
+
+class InterviewReplyRequest(BaseModel):
+    session_id: str
+    environment_id: str
+    user_text: str
+
+class InterviewReplyResponse(BaseModel):
+    session_id: str
+    environment_id: str
+    question: str          # next question, or "" if done
+    updated_descriptor: ChildDescriptor
+    missing_fields: list[str]
+    done: bool

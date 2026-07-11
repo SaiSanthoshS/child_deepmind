@@ -5,6 +5,8 @@ from app.models.schemas import (
     DispatchStatusResponse,
 )
 from app.services.dispatch_service import dispatch_alert, get_dispatch_status
+from app.services.locations_service import get_locations_for_city
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/dispatch", tags=["dispatch"])
 
@@ -20,3 +22,11 @@ async def status(case_id: str):
     if result is None:
         raise HTTPException(status_code=404, detail="Case not found")
     return result
+
+
+class LocationsRequest(BaseModel):
+    city: str
+
+@router.post("/locations")
+async def locations(request: LocationsRequest):
+    return await get_locations_for_city(request.city)

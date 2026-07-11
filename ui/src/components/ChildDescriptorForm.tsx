@@ -1,5 +1,7 @@
 import type { ChildDescriptor } from '../types'
 
+const CITIES = ['Mumbai', 'Delhi', 'Bengaluru', 'Chennai', 'Kolkata']
+
 interface Props {
   descriptor: ChildDescriptor
   onChange: (updated: ChildDescriptor) => void
@@ -20,7 +22,7 @@ export default function ChildDescriptorForm({ descriptor, onChange }: Props) {
         <input type="text" value={descriptor.name ?? ''} onChange={(e) => set('name', e.target.value)} className={inputClass} />
       </div>
 
-      {/* Row 2: Age + Gender side-by-side */}
+      {/* Row 2: Age + Gender */}
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-1">
           <label className="text-sm font-medium text-gray-700">Age</label>
@@ -36,7 +38,16 @@ export default function ChildDescriptorForm({ descriptor, onChange }: Props) {
         </div>
       </div>
 
-      {/* Row 3: Height + Weight */}
+      {/* Row 3: City */}
+      <div className="flex flex-col gap-1">
+        <label className="text-sm font-medium text-gray-700">City</label>
+        <select value={descriptor.city ?? ''} onChange={(e) => set('city', e.target.value)} className={inputClass}>
+          <option value="">Select city…</option>
+          {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+      </div>
+
+      {/* Row 4: Height + Weight */}
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-1">
           <label className="text-sm font-medium text-gray-700">Height (cm)</label>
@@ -48,18 +59,19 @@ export default function ChildDescriptorForm({ descriptor, onChange }: Props) {
         </div>
       </div>
 
-      {/* Row 4: Distinguishing marks */}
+      {/* Row 5: Distinguishing marks */}
       <div className="flex flex-col gap-1">
         <label className="text-sm font-medium text-gray-700">Distinguishing Marks</label>
         <input type="text" value={descriptor.distinguishing_marks ?? ''} onChange={(e) => set('distinguishing_marks', e.target.value)}
           placeholder="e.g. scar on left cheek, birthmark on neck" className={inputClass} />
       </div>
 
-      {/* Row 5: Last seen location + date */}
+      {/* Row 6: Last seen location + date */}
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-1">
           <label className="text-sm font-medium text-gray-700">Last Seen Location</label>
-          <input type="text" value={descriptor.last_seen_location ?? ''} onChange={(e) => set('last_seen_location', e.target.value)} className={inputClass} />
+          <input type="text" value={descriptor.last_seen_location ?? ''} onChange={(e) => set('last_seen_location', e.target.value)}
+            placeholder="e.g. Central Park, Mall" className={inputClass} />
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-sm font-medium text-gray-700">Last Seen Date</label>
@@ -67,7 +79,7 @@ export default function ChildDescriptorForm({ descriptor, onChange }: Props) {
         </div>
       </div>
 
-      {/* Row 6: Clothing */}
+      {/* Row 7: Clothing */}
       <div className="flex flex-col gap-1">
         <label className="text-sm font-medium text-gray-700">Clothing Description</label>
         <input type="text" value={descriptor.clothing_description ?? ''} onChange={(e) => set('clothing_description', e.target.value)}

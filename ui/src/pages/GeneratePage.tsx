@@ -3,6 +3,7 @@ import { useRef, useState } from 'react'
 import AgeProgressionGrid from '../components/AgeProgressionGrid'
 import ImageEditor from '../components/ImageEditor'
 import ChildDescriptorForm from '../components/ChildDescriptorForm'
+import LiveIntakeAgent from '../components/LiveIntakeAgent'
 import { generateAgeProgression } from '../services/api'
 import type { ChildDescriptor, PhotoEnhanceResponse, AgeProgressionResponse, AgeProgressionResult } from '../types'
 
@@ -16,6 +17,7 @@ export default function GeneratePage() {
 
   // ── Single source of truth for all child details ──────────────────────────
   const [descriptor, setDescriptor] = useState<ChildDescriptor>(state?.descriptor ?? {})
+  const detectedLanguage: string = state?.detectedLanguage ?? 'English'
 
   // ── Photo ─────────────────────────────────────────────────────────────────
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -132,11 +134,27 @@ export default function GeneratePage() {
         <p className="text-gray-500 text-sm mt-1">Step 1 of 3 — Enter details and generate age-progression images</p>
       </div>
 
-      {/* ── Section 1: Child Details + Photo ── */}
+      {/* ── Section 1: Child Details ── */}
       <section className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col gap-5">
         <h2 className="font-semibold text-gray-800">Child Details</h2>
 
-        <ChildDescriptorForm descriptor={descriptor} onChange={setDescriptor} />
+        {/* Side-by-side: voice agent (left) + live form (right) */}
+        <div className="grid grid-cols-2 gap-6">
+          <div className="flex flex-col gap-2">
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Voice Interview</p>
+            <LiveIntakeAgent
+              descriptor={descriptor}
+              detectedLanguage={detectedLanguage}
+              onUpdate={setDescriptor}
+              onDone={setDescriptor}
+              onSwitchToForm={() => {}}
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Details — edit anytime</p>
+            <ChildDescriptorForm descriptor={descriptor} onChange={setDescriptor} />
+          </div>
+        </div>
 
         {/* Photo inline with details */}
         <div className="border-t border-gray-100 pt-4">

@@ -10,6 +10,10 @@ import type {
   DispatchStatusResponse,
   AgeProgressionResponse,
   ImageEditResponse,
+  InterviewStartRequest,
+  InterviewStartResponse,
+  InterviewReplyRequest,
+  InterviewReplyResponse,
 } from '../types'
 
 const BASE = '/api/v1'
@@ -91,4 +95,28 @@ export async function dispatchAlert(body: DispatchRequest): Promise<DispatchResp
 
 export async function getDispatchStatus(caseId: string): Promise<DispatchStatusResponse> {
   return request<DispatchStatusResponse>(`/dispatch/status/${caseId}`)
+}
+
+export async function getDispatchLocations(city: string): Promise<{ railway_stations: {name:string,location:string,contact:string}[], ngos: {name:string,location:string,contact:string}[] }> {
+  return request('/dispatch/locations', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ city }),
+  })
+}
+
+export async function startInterview(body: InterviewStartRequest): Promise<InterviewStartResponse> {
+  return request<InterviewStartResponse>('/interview/start', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+}
+
+export async function replyInterview(body: InterviewReplyRequest): Promise<InterviewReplyResponse> {
+  return request<InterviewReplyResponse>('/interview/reply', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
 }

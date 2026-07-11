@@ -70,7 +70,7 @@ async def _run_managed_agent_dispatch(
     try:
         await asyncio.to_thread(
             client.models.generate_content,
-            model="gemini-2.0-flash",
+            model="gemini-3.5-flash",
             contents=task_prompt,
         )
 
